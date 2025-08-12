@@ -24,7 +24,7 @@ const Canvas = (props : CanvasProps) => {
         for(let i=0; i<resolutionX; i++) {
             for(let j=0; j<resolutionY; j++) {
                 ctx.fillStyle = randomColor()
-                ctx.rect(i * ctx.canvas.width / resolutionX, j * ctx.canvas.height / resolutionY, ctx.canvas.width / resolutionX, ctx.canvas.height / resolutionY)
+                ctx.fillRect(i * ctx.canvas.width / resolutionX, j * ctx.canvas.height / resolutionY, ctx.canvas.width / resolutionX, ctx.canvas.height / resolutionY)
                 ctx.fill()
             }
         }
@@ -41,8 +41,8 @@ const Canvas = (props : CanvasProps) => {
         if(!context){ return; }
 
         let frameCount = 0
-        let resolutionX = 2
-        let resolutionY = 2
+        let resolutionX = 16
+        let resolutionY = 9
         let animationFrameId : number
         let deltaTime = Date.now() - prevTime.current;
         timeSinceStart.current += deltaTime;
