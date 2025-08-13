@@ -25,7 +25,7 @@ class Vector2 {
 }
 
 class MatrixMath {
-
+    
     //assumes matrices of equal size
     static multiply(mat1: number[][], mat2: number[][]){
         let newMat: number[][] = []
@@ -49,7 +49,7 @@ class MatrixMath {
             }
             else{
                 j++
-                if(j > mat1[0].length-1){
+                if(j > mat1[0].length-1 || j > mat2[0].length-1){
                     j = 0
                     i++
                 }
@@ -70,9 +70,13 @@ const identityMatrix : number[][] = [
 
 class Mesh {
     verts: Vector3[]
+    objectMatrix: number[][]
+    worldMatrix: number[][]
 
     constructor(verts : Vector3[]){
         this.verts = verts
+        this.objectMatrix = identityMatrix
+        this.worldMatrix = identityMatrix
     }
 }
 
@@ -109,9 +113,9 @@ const Canvas = (props : CanvasProps) => {
         [7,8,9]
     ]
     let mat2: number[][] = [
-        [9,8,7],
-        [6,5,4],
-        [3,2,1]
+        [9],
+        [6],
+        [3]
     ]
 
     const randomColor = () => {
@@ -170,8 +174,8 @@ const Canvas = (props : CanvasProps) => {
                 let mat3: number[][] = MatrixMath.multiply(mat1, mat2)
                 context.clearRect(0, 0, context.canvas.width, context.canvas.height)
                 displayMatrix(context, mat1, new Vector2(0, 20))
-                displayMatrix(context, mat2, new Vector2(70, 20))
-                displayMatrix(context, mat3, new Vector2(140, 20))
+                displayMatrix(context, mat2, new Vector2(80, 20))
+                displayMatrix(context, mat3, new Vector2(160, 20))
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
             }
             animationFrameId = window.requestAnimationFrame(render)
