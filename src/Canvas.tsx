@@ -12,6 +12,19 @@ class Vector3 {
         this.y = y
         this.z = z
     }
+
+    translate(x:number, y:number, z:number){
+        let matrix = structuredClone(identityMatrix)
+        matrix[0][3] = x;
+        matrix[1][3] = y;
+        matrix[2][3] = z;
+        let newVec = MatrixMath.multiply(matrix, [[x],[y],[z]]);
+        if(newVec){
+            this.x = newVec[0][0]
+            this.y = newVec[1][0]
+            this.z = newVec[2][0]
+        }
+    }
 }
 
 class Vector2 {
@@ -25,9 +38,14 @@ class Vector2 {
 }
 
 class MatrixMath {
-    
+
     //assumes matrices of equal size
     static multiply(mat1: number[][], mat2: number[][]){
+        if(mat1[0].length != mat2.length){
+            return null
+        }
+
+
         let newMat: number[][] = []
         for(let i=0;i<mat1.length;i++){
             newMat[i] = []
@@ -70,13 +88,13 @@ const identityMatrix : number[][] = [
 
 class Mesh {
     verts: Vector3[]
-    objectMatrix: number[][]
+    objectMatrix: number[][] = structuredClone(identityMatrix)
     worldMatrix: number[][]
 
     constructor(verts : Vector3[]){
         this.verts = verts
-        this.objectMatrix = identityMatrix
-        this.worldMatrix = identityMatrix
+        this.objectMatrix = structuredClone(identityMatrix)
+        this.worldMatrix = structuredClone(identityMatrix)
     }
 }
 
@@ -84,20 +102,45 @@ class Mesh {
 class Cube extends Mesh {
 
     constructor(origin: Vector3, size: number){
-        let verts: Vector3[] = new Array(8)
+        let verts: Vector3[] = []
         let halfSize: number = size/2
-        verts.concat(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z + halfSize))
-        verts.concat(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z + halfSize))
-        verts.concat(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z + halfSize))
-        verts.concat(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z - halfSize))
+        verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z + halfSize))
+        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z + halfSize))
+        verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z + halfSize))
+        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z - halfSize))
 
-        verts.concat(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z + halfSize))
-        verts.concat(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z - halfSize))
-        verts.concat(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z - halfSize))
-        verts.concat(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z - halfSize))
+        verts.push(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z + halfSize))
+        verts.push(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z - halfSize))
+        verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z - halfSize))
+        verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z - halfSize))
         
         super(verts);
     }
+}
+
+function test(ctx: CanvasRenderingContext2D, verts: Vector3[], camLoc: Vector3){
+    let viewPlane = 2
+
+    for(let i=0;i<verts.length;i++){
+        let xdiff = verts[i].x - camLoc.x
+        let ydiff = verts[i].y - camLoc.y
+        let zdiff = verts[i].z - camLoc.z
+
+        let vertHyp = getHypotenuse(ydiff, zdiff)
+        let horzHyp = getHypotenuse(ydiff, xdiff)
+        let vertAngle = Math.atan(zdiff/ydiff)
+        let horzAngle = Math.atan(xdiff/ydiff)
+
+        let shortVert = Math.tan(vertAngle) * viewPlane
+        let shortHorz = Math.tan(horzAngle) * viewPlane
+
+        ctx.fillStyle = '#FF0000'
+        ctx.fillRect(shortVert, shortHorz, 1, 1)
+    }
+}
+
+function getHypotenuse(leg1: number, leg2: number){
+    return Math.pow(leg1, 2) + Math.pow(leg2, 2)
 }
 
 const Canvas = (props : CanvasProps) => {
@@ -107,6 +150,10 @@ const Canvas = (props : CanvasProps) => {
     const prevTime = useRef<number>(Date.now());
     const timeSinceStart = useRef<number>(0);
 
+    const viewPlane: number = 1;
+
+    const camLoc: Vector3 = new Vector3(10, 0, 10)
+
     let mat1: number[][] = [
         [1,2,3],
         [4,5,6],
@@ -115,7 +162,7 @@ const Canvas = (props : CanvasProps) => {
     let mat2: number[][] = [
         [9],
         [6],
-        [3]
+        [4]
     ]
 
     const randomColor = () => {
@@ -171,11 +218,12 @@ const Canvas = (props : CanvasProps) => {
         const render = () => {
             frameCount++
             if(frameCount == 1){
-                let mat3: number[][] = MatrixMath.multiply(mat1, mat2)
                 context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-                displayMatrix(context, mat1, new Vector2(0, 20))
-                displayMatrix(context, mat2, new Vector2(80, 20))
-                displayMatrix(context, mat3, new Vector2(160, 20))
+                context.fillStyle = '#000000'
+                context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+
+                let cube: Cube = new Cube(new Vector3(3, 0, 0), 1)
+                test(context, cube.verts, camLoc)
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
             }
             animationFrameId = window.requestAnimationFrame(render)
