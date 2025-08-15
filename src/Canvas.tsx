@@ -114,7 +114,7 @@ class Mesh {
        let worldVerts: Vector3[] = []
         for(let i = 0; i < this.rawVerts.length; i++){
             worldVerts[i] = MatrixMath.toVector3(MatrixMath.multiply(this.worldMatrix, this.rawVerts[i].toMatrix3()))
-    }
+        }
        return worldVerts
     }
 
@@ -145,26 +145,26 @@ function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
 
     for(let j=0;j<meshes.length;j++){
         let verts = meshes[j].getWorldVerts()
-    for(let i=0;i<verts.length;i++){
+        for(let i=0;i<verts.length;i++){
 
             verts[i] = MatrixMath.toVector3(MatrixMath.multiply(identityMatrix3, verts[i].toMatrix3()))
             
-        let xdiff = verts[i].x - camLoc.x
-        let ydiff = verts[i].y - camLoc.y
-        let zdiff = verts[i].z - camLoc.z
+            let xdiff = verts[i].x - camLoc.x
+            let ydiff = verts[i].y - camLoc.y
+            let zdiff = verts[i].z - camLoc.z
 
-        let vertHyp = getHypotenuse(ydiff, zdiff)
-        let horzHyp = getHypotenuse(ydiff, xdiff)
-        let vertAngle = Math.atan(zdiff/ydiff)
-        let horzAngle = Math.atan(xdiff/ydiff)
+            let vertHyp = getHypotenuse(ydiff, zdiff)
+            let horzHyp = getHypotenuse(ydiff, xdiff)
+            let vertAngle = Math.atan(zdiff/ydiff)
+            let horzAngle = Math.atan(xdiff/ydiff)
 
-        let shortVert = Math.tan(vertAngle) * viewPlane
-        let shortHorz = Math.tan(horzAngle) * viewPlane
+            let shortVert = Math.tan(vertAngle) * viewPlane
+            let shortHorz = Math.tan(horzAngle) * viewPlane
 
-        ctx.fillStyle = '#FF0000'
-        ctx.fillRect(shortVert, shortHorz, 1, 1)
+            ctx.fillStyle = '#FF0000'
+            ctx.fillRect(shortVert, shortHorz, 1, 1)
+        }
     }
-}
 
 }
 
