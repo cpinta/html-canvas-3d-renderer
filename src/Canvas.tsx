@@ -25,6 +25,10 @@ class Vector3 {
             this.z = newVec[2][0]
         }
     }
+
+    toMatrix3(): number[][]{
+        return [[this.x],[this.y],[this.z]]
+    }
 }
 
 class Vector2 {
@@ -42,7 +46,9 @@ class MatrixMath {
     //assumes matrices of equal size
     static multiply(mat1: number[][], mat2: number[][]){
         if(mat1[0].length != mat2.length){
-            return null
+            if(mat2[0].length != mat1.length){
+                return []
+            }
         }
 
 
@@ -76,8 +82,17 @@ class MatrixMath {
         }
         return newMat
     }
+
+    static toVector3(matrix: number[][]){
+        return new Vector3(matrix[0][0], matrix[1][0], matrix[2][0])
+    }
 }
 
+const identityMatrix3 : number[][] = [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+]
 
 const identityMatrix : number[][] = [
     [1, 0, 0, 0],
