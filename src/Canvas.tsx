@@ -179,8 +179,8 @@ function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
 
             let vertHyp = getHypotenuse(ydiff, zdiff)
             let horzHyp = getHypotenuse(ydiff, xdiff)
-            let vertAngle = Math.atan(zdiff/ydiff)
-            let horzAngle = Math.atan(xdiff/ydiff)
+            let vertAngle = Math.atan(ydiff/zdiff)
+            let horzAngle = Math.atan(xdiff/zdiff)
 
             let shortVert = Math.tan(vertAngle) * viewPlane
             let shortHorz = Math.tan(horzAngle) * viewPlane
@@ -208,7 +208,7 @@ const Canvas = (props : CanvasProps) => {
 
     const viewPlane: number = 1;
 
-    const camLoc: Vector3 = new Vector3(0, -2, 0)
+    const camLoc: Vector3 = new Vector3(0, 0, -2)
 
     let mat1: number[][] = [
         [1,2,3],
@@ -284,7 +284,7 @@ const Canvas = (props : CanvasProps) => {
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
                 let cube: Cube = new Cube(new Vector3(0, 0, 0), 1)
-                cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Rz(0.01*frameCount))
+                cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(0.01*frameCount))
                 // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(45))
                 test(context, [cube], camLoc)
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
