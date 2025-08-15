@@ -102,15 +102,22 @@ const identityMatrix : number[][] = [
 ]
 
 class Mesh {
-    verts: Vector3[]
-    objectMatrix: number[][] = structuredClone(identityMatrix)
-    worldMatrix: number[][]
+    rawVerts: Vector3[]
+    objectMatrix: number[][] = structuredClone(identityMatrix3)
+    worldMatrix: number[][] = structuredClone(identityMatrix3)
 
     constructor(verts : Vector3[]){
-        this.verts = verts
-        this.objectMatrix = structuredClone(identityMatrix)
-        this.worldMatrix = structuredClone(identityMatrix)
+        this.rawVerts = verts
     }
+    
+    getWorldVerts(): Vector3[]{
+       let worldVerts: Vector3[] = []
+        for(let i = 0; i < this.rawVerts.length; i++){
+            worldVerts[i] = MatrixMath.toVector3(MatrixMath.multiply(this.worldMatrix, this.rawVerts[i].toMatrix3()))
+    }
+       return worldVerts
+    }
+
 }
 
 
@@ -133,10 +140,15 @@ class Cube extends Mesh {
     }
 }
 
-function test(ctx: CanvasRenderingContext2D, verts: Vector3[], camLoc: Vector3){
+function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
     let viewPlane = 2
 
+    for(let j=0;j<meshes.length;j++){
+        let verts = meshes[j].getWorldVerts()
     for(let i=0;i<verts.length;i++){
+
+            verts[i] = MatrixMath.toVector3(MatrixMath.multiply(identityMatrix3, verts[i].toMatrix3()))
+            
         let xdiff = verts[i].x - camLoc.x
         let ydiff = verts[i].y - camLoc.y
         let zdiff = verts[i].z - camLoc.z
@@ -152,6 +164,8 @@ function test(ctx: CanvasRenderingContext2D, verts: Vector3[], camLoc: Vector3){
         ctx.fillStyle = '#FF0000'
         ctx.fillRect(shortVert, shortHorz, 1, 1)
     }
+}
+
 }
 
 function getHypotenuse(leg1: number, leg2: number){
@@ -238,7 +252,7 @@ const Canvas = (props : CanvasProps) => {
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
                 let cube: Cube = new Cube(new Vector3(3, 0, 0), 1)
-                test(context, cube.verts, camLoc)
+                test(context, [cube], camLoc)
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
             }
             animationFrameId = window.requestAnimationFrame(render)
