@@ -1,5 +1,5 @@
 import { ECDH } from 'crypto';
-import React, { useEffect, useRef } from 'react';
+import React, { KeyboardEvent, useEffect, useRef } from 'react';
 
 interface CanvasProps {}
 
@@ -67,7 +67,13 @@ class MatrixMath {
         ]
     }
 
-
+    static move(matrix: number[][], offset: Vector3){
+        let idMatrix = structuredClone(identityMatrix3)
+        idMatrix[0][3] = offset.x;
+        idMatrix[1][3] = offset.y;
+        idMatrix[2][3] = offset.z;
+        return MatrixMath.multiply(matrix, idMatrix);
+    }
 
     static multiply(mat1: number[][], mat2: number[][]){
         if(mat1[0].length != mat2.length){
@@ -209,7 +215,7 @@ class Cube extends Mesh {
     }
 }
 
-function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
+function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3, scaleMultiplier: number){
     let viewPlane = 90
 
     for(let j=0;j<meshes.length;j++){
@@ -228,8 +234,11 @@ function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
             let shortVert = Math.tan(vertAngle) * viewPlane
             let shortHorz = Math.tan(horzAngle) * viewPlane
 
+            shortHorz *= scaleMultiplier
+            shortVert *= scaleMultiplier
             shortHorz += ctx.canvas.width/2
             shortVert += ctx.canvas.height/2
+            
 
             screenSpaceVerts[i] = new Vector2(shortHorz, shortVert)
 
@@ -255,7 +264,7 @@ function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
             }
 
             ctx.fillStyle = '#FF0000'
-            ctx.fillRect(shortHorz, shortVert, 1, 1)
+            // ctx.fillRect(shortHorz*4, shortVert*4, 1, 1)
             // ctx.fillStyle = '#00FF00'
             // ctx.fillText(i.toString(), shortHorz, shortVert)
         }
@@ -305,9 +314,6 @@ const Canvas = (props : CanvasProps) => {
                 ctx.fillStyle = randomColor()
                 ctx.fillRect(i * ctx.canvas.width / resolutionX, j * ctx.canvas.height / resolutionY, ctx.canvas.width / resolutionX, ctx.canvas.height / resolutionY)
                 ctx.fill()
-
-                // displayMatrix(ctx, mat3);
-                
             }
         }
     }
@@ -332,14 +338,15 @@ const Canvas = (props : CanvasProps) => {
         if(!context){ return; }
 
         let frameCount = 0
-        let resolutionX = 512
-        let resolutionY = 288
+        let resolutionX = 512*4
+        let resolutionY = 288*4
         let animationFrameId : number
         let deltaTime = Date.now() - prevTime.current;
         timeSinceStart.current += deltaTime;
 
-        canvas.width = 512
-        canvas.height = 288
+        let displayScale = 4
+        canvas.width = 512 * displayScale
+        canvas.height = 288 * displayScale
 
         context.imageSmoothingEnabled = false;
         context.lineWidth = 1
@@ -355,10 +362,11 @@ const Canvas = (props : CanvasProps) => {
 
                 let cube: Cube = new Cube(new Vector3(0, 0, 0), 2)
                 cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(0.01*frameCount))
+                cube.worldMatrix = MatrixMath.move(cube.worldMatrix, new Vector3(0, 100*frameCount, 0))
                 // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Rz(0.01*frameCount))
                 // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Rx(0.01*frameCount))
                 // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(45))
-                test(context, [cube], camLoc)
+                test(context, [cube], camLoc, displayScale)
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
             }
             animationFrameId = window.requestAnimationFrame(render)
@@ -371,8 +379,22 @@ const Canvas = (props : CanvasProps) => {
     }, [draw])
 
 
+    window.addEventListener("keydown", e => handleKeyDown(e as any));
+    window.addEventListener("keyup", e => handleKeyUp(e as any));
+    // window.addEventListener("keyup", e => handleKeyUp(e));
+    
+    function handleKeyDown(e: KeyboardEvent) {
+        console.log('key down', e.code)
+    }
+    function handleKeyUp(e: KeyboardEvent) {
+        console.log('key up', e.code)
+    }
+
+
+
+
     return(
-        <canvas ref={canvasRef} {...props} style={{width:100+`%`, height:100+`%`}} />
+        <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:100+`%`}} />
     );
 }
 
