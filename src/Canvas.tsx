@@ -375,8 +375,9 @@ const Canvas = (props : CanvasProps) => {
                 context.fillStyle = '#000000'
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
+                inputTick()
                 
-                meshes.current[0].worldMatrix = MatrixMath.multiply(meshes.current[0].worldMatrix, MatrixMath.Ry(0.01))
+                // meshes.current[0].worldMatrix = MatrixMath.multiply(meshes.current[0].worldMatrix, MatrixMath.Ry(0.01))
                 drawMeshes(context, meshes.current, camLoc, displayScale)
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
             }
@@ -394,18 +395,76 @@ const Canvas = (props : CanvasProps) => {
     window.addEventListener("keyup", e => handleKeyUp(e as any));
     // window.addEventListener("keyup", e => handleKeyUp(e));
     
+    let keyTapMap: Map<string, ()=>void> = new Map()
+
+    let keyHoldMap: Map<string, ()=>void> = new Map()
+    keyHoldMap.set('ArrowUp', keyRotateUp)
+    keyHoldMap.set('ArrowDown', keyRotateDown)
+
+
+    function inputTick(){
+        for(let i=0;i<keysPressed.length;i++){
+            if(keyHoldMap.has(keysPressed[i])){
+                keyHoldMap.get(keysPressed[i])?.call(null)
+            }
+        }
+    }
+
+    let keysPressed: string[] = []
+    let keysPressedMap: Map<string, number> = new Map()
+
+    function keyRotateUp(){
+        keyRotate(new Vector3(0.05, 0, 0))
+    }
+    function keyRotateDown(){
+        keyRotate(new Vector3(-0.05, 0, 0))
+    }
+
+    function keyRotate(dir: Vector3){
+        meshes.current[0].wRotate(dir)
+    }
+
     function handleKeyDown(e: KeyboardEvent) {
         console.log('key down', e.code)
+        if(keyTapMap.has(e.code)){
+            keyTapMap.get(e.code)?.call(null)
+        }
+        if(keyHoldMap.has(e.code)){
+            if(keysPressedMap.has(e.code)){
+                keysPressed.push(e.code)
+                keysPressedMap.set(e.code, keysPressed.length-1)
+            }
+        }
+        
     }
     function handleKeyUp(e: KeyboardEvent) {
-        console.log('key up', e.code)
+        if(keysPressedMap.has(e.code)){
+            let index: number | undefined = keysPressedMap.get(e.code)
+
+            if(!index){
+                keysPressedMap.delete(e.code)
+                index = keysPressed.indexOf(e.code)
+                if(index == -1){
+                    return
+                } 
+                keysPressed.splice(index, 1)
+                return
+            }
+
+            keysPressed.splice(index, 1)
+            if(keysPressed.length > index){
+                for(let i=index;i<keysPressed.length;i++){
+                    keysPressedMap.set(keysPressed[i], i)
+                }
+            }
+        }
     }
 
 
 
 
     return(
-        <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:100+`%`}} />
+        <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:'0%'}} />
     );
 }
 
