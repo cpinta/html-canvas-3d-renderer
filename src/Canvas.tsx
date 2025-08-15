@@ -243,6 +243,11 @@ const Canvas = (props : CanvasProps) => {
         let deltaTime = Date.now() - prevTime.current;
         timeSinceStart.current += deltaTime;
 
+        // canvas.width = canvas.clientWidth
+        // canvas.height = canvas.clientHeight
+
+        context.imageSmoothingEnabled = false;
+
         //Our draw came here
         const render = () => {
             frameCount++
