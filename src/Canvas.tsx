@@ -67,6 +67,10 @@ class MatrixMath {
         ]
     }
 
+    static rotate(matrix: number[][], rotation: Vector3){
+        return this.multiply(matrix, this.multiply(this.Rx(rotation.x), this.multiply(this.Ry(rotation.y), this.Rz(rotation.z))))
+    }
+
     static move(matrix: number[][], offset: Vector3){
         let idMatrix = structuredClone(identityMatrix3)
         idMatrix[0][3] = offset.x;
@@ -178,6 +182,10 @@ class Mesh {
         else{
             this.edges.set(vertIndex2, [vertIndex1])
         }
+    }
+
+    wRotate(rotation: Vector3){
+        this.worldMatrix = MatrixMath.rotate(this.worldMatrix, rotation)
     }
 }
 
