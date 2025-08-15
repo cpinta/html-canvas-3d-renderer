@@ -1,3 +1,4 @@
+import { ECDH } from 'crypto';
 import React, { useEffect, useRef } from 'react';
 
 interface CanvasProps {}
@@ -130,8 +131,13 @@ class Mesh {
     objectMatrix: number[][] = structuredClone(identityMatrix3)
     worldMatrix: number[][] = structuredClone(identityMatrix3)
 
-    constructor(verts : Vector3[]){
+    edges: Map<number, number[]> = new Map()
+
+    constructor(verts : Vector3[], edges: number[][]){
         this.rawVerts = verts
+        for(let i=0;i<edges.length;i++){
+            this.createEdge(edges[i][0], edges[i][1])
+        }
     }
     
     getWorldVerts(): Vector3[]{
@@ -142,6 +148,31 @@ class Mesh {
        return worldVerts
     }
 
+    createEdge(vertIndex1: number, vertIndex2: number){
+        if(this.edges.has(vertIndex1)){
+            this.edges.get(vertIndex1)?.push(vertIndex2)
+            this.edges.get(vertIndex1)?.sort(
+                function(a, b){
+                    return a - b
+                }
+            )
+        }
+        else{
+            this.edges.set(vertIndex1, [vertIndex2])
+        }
+
+        if(this.edges.has(vertIndex2)){
+            this.edges.get(vertIndex2)?.push(vertIndex1)
+            this.edges.get(vertIndex2)?.sort(
+                function(a, b){
+                    return a - b
+                }
+            )
+        }
+        else{
+            this.edges.set(vertIndex2, [vertIndex1])
+        }
+    }
 }
 
 
@@ -149,18 +180,32 @@ class Cube extends Mesh {
 
     constructor(origin: Vector3, size: number){
         let verts: Vector3[] = []
+        let edges: number[][] = []
         let halfSize: number = size/2
         verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z - halfSize))
-
+        verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z - halfSize))
         verts.push(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z + halfSize))
         verts.push(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z - halfSize))
-        verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z - halfSize))
+
+        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z + halfSize))
+        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z - halfSize))
+        verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z + halfSize))
         verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z - halfSize))
+
+        edges.push([0,1])
+        edges.push([0,2])
+        edges.push([0,4])
+        edges.push([1,3])
+        edges.push([1,5])
+        edges.push([2,3])
+        edges.push([2,6])
+        edges.push([3,7])
+        edges.push([4,5])
+        edges.push([4,6])
+        edges.push([5,7])
+        edges.push([6,7])
         
-        super(verts);
+        super(verts, edges);
     }
 }
 
@@ -169,10 +214,8 @@ function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
 
     for(let j=0;j<meshes.length;j++){
         let verts = meshes[j].getWorldVerts()
+        let screenSpaceVerts: Vector2[] = [] 
         for(let i=0;i<verts.length;i++){
-
-            verts[i] = MatrixMath.toVector3(MatrixMath.multiply(identityMatrix3, verts[i].toMatrix3()))
-            
             let xdiff = verts[i].x - camLoc.x
             let ydiff = verts[i].y - camLoc.y
             let zdiff = verts[i].z - camLoc.z
@@ -188,8 +231,33 @@ function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
             shortHorz += ctx.canvas.width/2
             shortVert += ctx.canvas.height/2
 
+            screenSpaceVerts[i] = new Vector2(shortHorz, shortVert)
+
+            if(meshes[j].edges.has(i)){
+                let curEdges: number[] | undefined = meshes[j].edges.get(i)
+                if(!curEdges){
+                    continue
+                }
+
+                let edgeIndex: number = 0
+                while(curEdges[edgeIndex] < i){
+                    ctx.beginPath()
+                    ctx.moveTo(screenSpaceVerts[i].x, screenSpaceVerts[i].y)
+                    ctx.lineTo(screenSpaceVerts[curEdges[edgeIndex]].x, screenSpaceVerts[curEdges[edgeIndex]].y)
+                    ctx.stroke()
+                    ctx.closePath()
+
+                    edgeIndex++;
+                    if(edgeIndex !< curEdges.length){
+                        continue
+                    }
+                }
+            }
+
             ctx.fillStyle = '#FF0000'
             ctx.fillRect(shortHorz, shortVert, 1, 1)
+            // ctx.fillStyle = '#00FF00'
+            // ctx.fillText(i.toString(), shortHorz, shortVert)
         }
     }
 
@@ -208,7 +276,6 @@ const Canvas = (props : CanvasProps) => {
 
     const viewPlane: number = 1;
 
-    const camLoc: Vector3 = new Vector3(0, 0, -2)
 
     let mat1: number[][] = [
         [1,2,3],
@@ -253,6 +320,7 @@ const Canvas = (props : CanvasProps) => {
         }
     }
 
+    const camLoc: Vector3 = new Vector3(0, 0, -3)
 
     useEffect(() => {
 
@@ -274,6 +342,8 @@ const Canvas = (props : CanvasProps) => {
         canvas.height = 288
 
         context.imageSmoothingEnabled = false;
+        context.lineWidth = 1
+        context.strokeStyle = '#FF0000'
 
         //Our draw came here
         const render = () => {
@@ -283,8 +353,10 @@ const Canvas = (props : CanvasProps) => {
                 context.fillStyle = '#000000'
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-                let cube: Cube = new Cube(new Vector3(0, 0, 0), 1)
+                let cube: Cube = new Cube(new Vector3(0, 0, 0), 2)
                 cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(0.01*frameCount))
+                // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Rz(0.01*frameCount))
+                // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Rx(0.01*frameCount))
                 // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(45))
                 test(context, [cube], camLoc)
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
