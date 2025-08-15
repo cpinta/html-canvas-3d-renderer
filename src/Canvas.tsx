@@ -43,7 +43,31 @@ class Vector2 {
 
 class MatrixMath {
 
-    //assumes matrices of equal size
+    static Rx(theta: number): number[][]{
+        return [
+            [1,0,0],
+            [0, Math.cos(theta), -Math.sin(theta)],
+            [0, Math.sin(theta), Math.cos(theta)]
+        ]
+    }
+    static Ry(theta: number): number[][]{
+        return [
+            [Math.cos(theta),0,Math.sin(theta)],
+            [0, 1, 0],
+            [-Math.sin(theta), 0, Math.cos(theta)]
+
+        ]
+    }
+    static Rz(theta: number): number[][]{
+        return [
+            [Math.cos(theta),-Math.sin(theta),0],
+            [Math.sin(theta), Math.cos(theta),0],
+            [0, 0, 1]
+        ]
+    }
+
+
+
     static multiply(mat1: number[][], mat2: number[][]){
         if(mat1[0].length != mat2.length){
             if(mat2[0].length != mat1.length){
@@ -141,7 +165,7 @@ class Cube extends Mesh {
 }
 
 function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
-    let viewPlane = 2
+    let viewPlane = 90
 
     for(let j=0;j<meshes.length;j++){
         let verts = meshes[j].getWorldVerts()
@@ -161,8 +185,11 @@ function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3){
             let shortVert = Math.tan(vertAngle) * viewPlane
             let shortHorz = Math.tan(horzAngle) * viewPlane
 
+            shortHorz += ctx.canvas.width/2
+            shortVert += ctx.canvas.height/2
+
             ctx.fillStyle = '#FF0000'
-            ctx.fillRect(shortVert, shortHorz, 1, 1)
+            ctx.fillRect(shortHorz, shortVert, 1, 1)
         }
     }
 
@@ -181,7 +208,7 @@ const Canvas = (props : CanvasProps) => {
 
     const viewPlane: number = 1;
 
-    const camLoc: Vector3 = new Vector3(10, 0, 10)
+    const camLoc: Vector3 = new Vector3(0, -2, 0)
 
     let mat1: number[][] = [
         [1,2,3],
@@ -243,20 +270,22 @@ const Canvas = (props : CanvasProps) => {
         let deltaTime = Date.now() - prevTime.current;
         timeSinceStart.current += deltaTime;
 
-        // canvas.width = canvas.clientWidth
-        // canvas.height = canvas.clientHeight
+        canvas.width = 512
+        canvas.height = 288
 
         context.imageSmoothingEnabled = false;
 
         //Our draw came here
         const render = () => {
             frameCount++
-            if(frameCount == 1){
+            if(true){
                 context.clearRect(0, 0, context.canvas.width, context.canvas.height)
                 context.fillStyle = '#000000'
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-                let cube: Cube = new Cube(new Vector3(3, 0, 0), 1)
+                let cube: Cube = new Cube(new Vector3(0, 0, 0), 1)
+                cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Rz(0.01*frameCount))
+                // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(45))
                 test(context, [cube], camLoc)
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
             }
