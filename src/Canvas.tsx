@@ -215,7 +215,7 @@ class Cube extends Mesh {
     }
 }
 
-function test(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3, scaleMultiplier: number){
+function drawMeshes(ctx: CanvasRenderingContext2D, meshes: Mesh[], camLoc: Vector3, scaleMultiplier: number){
     let viewPlane = 90
 
     for(let j=0;j<meshes.length;j++){
@@ -285,6 +285,8 @@ const Canvas = (props : CanvasProps) => {
 
     const viewPlane: number = 1;
 
+    const meshes = useRef<Mesh[]>([])
+
 
     let mat1: number[][] = [
         [1,2,3],
@@ -352,6 +354,11 @@ const Canvas = (props : CanvasProps) => {
         context.lineWidth = 1
         context.strokeStyle = '#FF0000'
 
+        let cube: Cube = new Cube(new Vector3(0, 0, 0), 2)
+        cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(0.01*frameCount))
+        cube.worldMatrix = MatrixMath.move(cube.worldMatrix, new Vector3(0, 100*frameCount, 0))
+        meshes.current.push(cube)
+
         //Our draw came here
         const render = () => {
             frameCount++
@@ -360,13 +367,9 @@ const Canvas = (props : CanvasProps) => {
                 context.fillStyle = '#000000'
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-                let cube: Cube = new Cube(new Vector3(0, 0, 0), 2)
-                cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(0.01*frameCount))
-                cube.worldMatrix = MatrixMath.move(cube.worldMatrix, new Vector3(0, 100*frameCount, 0))
-                // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Rz(0.01*frameCount))
-                // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Rx(0.01*frameCount))
-                // cube.worldMatrix = MatrixMath.multiply(cube.worldMatrix, MatrixMath.Ry(45))
-                test(context, [cube], camLoc, displayScale)
+                
+                meshes.current[0].worldMatrix = MatrixMath.multiply(meshes.current[0].worldMatrix, MatrixMath.Ry(0.01))
+                drawMeshes(context, meshes.current, camLoc, displayScale)
                 // draw(context, frameCount, resolutionX, resolutionY, deltaTime)
             }
             animationFrameId = window.requestAnimationFrame(render)
