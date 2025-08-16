@@ -30,10 +30,31 @@ export class Vector3 {
     }
 }
 
-export class Mesh {
-    rawVerts: Vector3[]
+//Equivalent of an Object in Unity or Node in Godot
+export class Instance{
+    mesh: Mesh
     objectMatrix: number[][] = structuredClone(identityMatrix3)
     worldMatrix: number[][] = structuredClone(identityMatrix3)
+
+    constructor(mesh: Mesh){
+        this.mesh = mesh
+    }
+
+    getWorldVerts(): Vector3[]{
+       let worldVerts: Vector3[] = []
+        for(let i = 0; i < this.mesh.rawVerts.length; i++){
+            worldVerts[i] = MMath.toVector3(MMath.multiply(this.worldMatrix, this.mesh.rawVerts[i].toMatrix3()))
+        }
+       return worldVerts
+    }
+
+    wRotate(rotation: Vector3){
+        this.worldMatrix = MMath.rotate(this.worldMatrix, rotation)
+    }
+}
+
+export class Mesh {
+    rawVerts: Vector3[]
 
     edges: Map<number, number[]> = new Map()
 
@@ -42,14 +63,6 @@ export class Mesh {
         for(let i=0;i<edges.length;i++){
             this.createEdge(edges[i][0], edges[i][1])
         }
-    }
-    
-    getWorldVerts(): Vector3[]{
-       let worldVerts: Vector3[] = []
-        for(let i = 0; i < this.rawVerts.length; i++){
-            worldVerts[i] = MMath.toVector3(MMath.multiply(this.worldMatrix, this.rawVerts[i].toMatrix3()))
-        }
-       return worldVerts
     }
 
     createEdge(vertIndex1: number, vertIndex2: number){
@@ -76,43 +89,5 @@ export class Mesh {
         else{
             this.edges.set(vertIndex2, [vertIndex1])
         }
-    }
-
-    wRotate(rotation: Vector3){
-        this.worldMatrix = MMath.rotate(this.worldMatrix, rotation)
-    }
-}
-
-
-export class Cube extends Mesh {
-
-    constructor(origin: Vector3, size: number){
-        let verts: Vector3[] = []
-        let edges: number[][] = []
-        let halfSize: number = size/2
-        verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z - halfSize))
-        verts.push(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z - halfSize))
-
-        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z - halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z - halfSize))
-
-        edges.push([0,1])
-        edges.push([0,2])
-        edges.push([0,4])
-        edges.push([1,3])
-        edges.push([1,5])
-        edges.push([2,3])
-        edges.push([2,6])
-        edges.push([3,7])
-        edges.push([4,5])
-        edges.push([4,6])
-        edges.push([5,7])
-        edges.push([6,7])
-        
-        super(verts, edges);
     }
 }
