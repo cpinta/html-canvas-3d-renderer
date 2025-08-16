@@ -33,7 +33,7 @@ const Canvas = (props : CanvasProps) => {
 
         let frameCount = 0
         let animationFrameId : number
-        let deltaTime = Date.now() - prevTime.current;
+        let deltaTime = (Date.now() - prevTime.current)/1000;
         timeSinceStart.current += deltaTime;
 
         let displayScale = 4
