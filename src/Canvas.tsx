@@ -67,20 +67,27 @@ const Canvas = (props : CanvasProps) => {
 
     window.addEventListener("keydown", e => handleKeyDown(e as any));
     window.addEventListener("keyup", e => handleKeyUp(e as any));
-    // window.addEventListener("keyup", e => handleKeyUp(e));
-    
+
+    let keyHoldMap: Map<string, ()=>void> = new Map()
+    keyHoldMap.set('ArrowUp', keyRotateUp)
+    keyHoldMap.set('ArrowDown', keyRotateDown)
+
+    function keyRotateUp(){
+    }
+    function keyRotateDown(){
+    }
+
     function handleKeyDown(e: KeyboardEvent) {
-        console.log('key down', e.code)
+        
     }
     function handleKeyUp(e: KeyboardEvent) {
-        console.log('key up', e.code)
     }
 
 
 
 
     return(
-        <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:100+`%`}} />
+        <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:'0%'}} />
     );
 }
 
