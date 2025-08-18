@@ -31,13 +31,13 @@ export class Cube extends Mesh {
         edges.push([5,7])   //10
         edges.push([6,7])   //11
 
-        faces.push([0,1,3,5])
-        faces.push([1,2,6,9])
-        faces.push([8,9,10,11])
-        faces.push([3,4,7,10])
+        faces.push([0,3,5,1])
+        faces.push([1,2,9,6])
+        faces.push([8,10,11,9])
+        faces.push([3,4,10,7])
         
-        faces.push([0,2,4,8])
-        faces.push([5,6,7,11])
+        faces.push([0,2,8,4])
+        faces.push([5,6,11,7])
         
         
         super(verts, edges, faces);

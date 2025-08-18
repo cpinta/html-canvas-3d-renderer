@@ -1,4 +1,4 @@
-import { Object3D, Vector3 } from "./3D"
+import { Object3D, Vector3, Face, Mesh } from "./3D"
 import { Cube } from "./Primitives"
 import { Vector2 } from "./2D"
 import { MMath } from "./Matrix"
@@ -6,18 +6,18 @@ import { MMath } from "./Matrix"
 
 export class Renderer{
     
-    meshes: Object3D[] = []
-    camLoc: Vector3 = new Vector3(0, 0, -3)
+    objects: Object3D[] = []
+    camLoc: Vector3 = new Vector3(0, 0, -2.25)
     viewPlane: number = 1;
 
     constructor(){
         let cube: Cube = new Cube(new Vector3(0, 0, 0), 2)
         let obj: Object3D = new Object3D(cube)
-        this.meshes.push(obj)
+        this.objects.push(obj)
     }
     
     draw(ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number){
-        this.meshes[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
+        this.objects[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
         this.drawMeshes(ctx, scaleMultiplier)
     }
 
@@ -25,9 +25,16 @@ export class Renderer{
     drawMeshes(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
         let viewPlane = 90
 
-        for(let j=0;j<this.meshes.length;j++){
-            let verts = this.meshes[j].getWorldVerts()
+        let linesDrawn = 0
+        let facesDrawn = 0
+        for(let j=0;j<this.objects.length;j++){
+            let obj: Object3D = this.objects[j]
+            let mesh: Mesh = obj.mesh
+            let verts = obj.getWorldVerts()
+            ctx.fillStyle = '#FF0000'
+
             let screenSpaceVerts: Vector2[] = [] 
+            let screenSpaceEdges: number[]
             for(let i=0;i<verts.length;i++){
                 let xdiff = verts[i].x - this.camLoc.x
                 let ydiff = verts[i].y - this.camLoc.y
@@ -49,34 +56,120 @@ export class Renderer{
 
                 screenSpaceVerts[i] = new Vector2(shortHorz, shortVert)
 
-                if(this.meshes[j].mesh.edgeMap.has(i)){
-                    let curEdges: number[] | undefined = this.meshes[j].mesh.edgeMap.get(i)
-                    if(!curEdges){
+
+                ctx.strokeStyle = '#FF0000'
+                if(mesh.vert2edgeMap.has(i)){
+                    let currentEdgeIndexes: number[] | undefined = mesh.vert2edgeMap.get(i)
+                    if(!currentEdgeIndexes){
                         continue
                     }
 
-                    let edgeIndex: number = 0
-                    while(curEdges[edgeIndex] < i){
-                        ctx.beginPath()
-                        ctx.moveTo(screenSpaceVerts[i].x, screenSpaceVerts[i].y)
-                        ctx.lineTo(screenSpaceVerts[curEdges[edgeIndex]].x, screenSpaceVerts[curEdges[edgeIndex]].y)
-                        ctx.stroke()
-                        ctx.closePath()
-
-                        edgeIndex++;
-                        if(edgeIndex !< curEdges.length){
-                            continue
+                    for(let k=0;k<currentEdgeIndexes.length;k++){
+                        let edge: number[] = mesh.edgeArr[currentEdgeIndexes[k]]
+                        if(edge[0] <= i && edge[1] <= i){
+                            ctx.beginPath()
+                            ctx.moveTo(screenSpaceVerts[edge[0]].x, screenSpaceVerts[edge[0]].y)
+                            ctx.lineTo(screenSpaceVerts[edge[1]].x, screenSpaceVerts[edge[1]].y)
+                            ctx.stroke()
+                            ctx.closePath()
+                            linesDrawn++
                         }
                     }
                 }
 
-                ctx.fillStyle = '#FF0000'
+                // ctx.fillStyle = '#0000FF'
+                // ctx.strokeStyle = '#0000FF'
+                if(mesh.vert2faceMap.has(i)){
+                    let faces: Face[] | undefined = mesh.vert2faceMap.get(i)
+                    if(!faces){
+                        continue
+                    }
+                    let vertIndex: number = 0
+                    for(let l=0;l<faces.length;l++){
+                        let face: Face = faces[l]
+                        ctx.beginPath()
+
+                        let initialIndex: number = 0
+                        let nextIndex: number = 0
+
+                        let averageDepth: number = 0
+
+                        let edge1:number[] = mesh.edgeArr[face.edgeIndexes[0]]
+                        let edge2:number[] = mesh.edgeArr[face.edgeIndexes[1]]
+                        
+                        if(edge1[0] == edge2[0]){
+                            ctx.moveTo(screenSpaceVerts[edge1[1]].x, screenSpaceVerts[edge1[1]].y)
+                            ctx.lineTo(screenSpaceVerts[edge1[0]].x, screenSpaceVerts[edge1[0]].y)
+                            nextIndex = 1
+                            initialIndex = 1
+                        }
+                        else{
+                            ctx.moveTo(screenSpaceVerts[edge1[0]].x, screenSpaceVerts[edge1[0]].y)
+                            ctx.lineTo(screenSpaceVerts[edge1[1]].x, screenSpaceVerts[edge1[1]].y)
+                            nextIndex = 1
+                            initialIndex = 0
+                        }
+                        averageDepth += verts[edge1[0]].z
+                        averageDepth += verts[edge1[1]].z
+
+                        for(let m=1;m<face.edgeIndexes.length;m++){
+                            let edgeIndex: number = face.edgeIndexes[m]
+                            let curEdge:number[] = mesh.edgeArr[edgeIndex]
+
+                            ctx.lineTo(screenSpaceVerts[curEdge[nextIndex]].x, screenSpaceVerts[curEdge[nextIndex]].y)
+                            
+                            ctx.fillStyle = '#AAAAFF'
+                            ctx.font = "24px Arial"
+                            ctx.fillText(curEdge[nextIndex].toString(), screenSpaceVerts[curEdge[nextIndex]].x + 10, screenSpaceVerts[curEdge[nextIndex]].y + 10)
+
+                            averageDepth += verts[curEdge[nextIndex]].z
+
+                            if(m+1 < face.edgeIndexes.length){
+                                if(curEdge[0] == mesh.edgeArr[face.edgeIndexes[m+1]][0]){
+                                    nextIndex = 0
+                                }
+                                else{
+                                    nextIndex = 1
+                                }
+                            }
+                        }
+                        ctx.lineTo(screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].x, screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].y)
+                        ctx.fillStyle = '#AAAAFF'
+                        ctx.font = "24px Arial"
+                        ctx.fillText(edge1[initialIndex].toString(), screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].x + 10, screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].y + 10)
+
+                        averageDepth /= face.edgeIndexes.length * 2
+                        let hex = '#0000FF'
+                        if(i == 6){
+                            ctx.strokeStyle = '#00FF00'
+                            ctx.strokeText(averageDepth.toString(), 30, 30)
+                            let normalizedDepth = ((averageDepth + 0.8))/1.6
+                            // hex = '#'+decimalTo2DigitHex(Math.trunc(16 * normalizedDepth))+'00FF'
+                            hex = '#AAFFAA'
+                        }
+
+
+                        ctx.fillStyle = hex
+                        ctx.strokeStyle = hex
+                        ctx.closePath()
+                        ctx.fill()
+                        facesDrawn++
+                    }
+                }
+
                 // ctx.fillRect(shortHorz*4, shortVert*4, 1, 1)
-                // ctx.fillStyle = '#00FF00'
-                // ctx.fillText(i.toString(), shortHorz, shortVert)
             }
         }
+        ctx.strokeStyle = '#00FF00'
+        ctx.strokeText(linesDrawn.toString(), 20, 20)
 
     }
 }
 
+function decimalTo2DigitHex(decimalNumber: number) {
+  // Convert to hexadecimal string
+  let hexString = decimalNumber.toString(16);
+
+  // Pad with a leading zero if the length is less than 2
+  return hexString.padStart(2, '0');
+}

@@ -54,14 +54,18 @@ export class Object3D{
 
 export class Face {
     edgeIndexes: number[]
-    largestIndex: number
+    largestEdgeIndex: number
+    largestVertIndex: number = -1
 
     constructor(edgeIndexes: number[]){
+        if(edgeIndexes.length < 3){
+            throw new Error("Invalid face")
+        }
         this.edgeIndexes = edgeIndexes
-        this.largestIndex = 0
+        this.largestEdgeIndex = 0
         for(let i=1;i<edgeIndexes.length;i++){
-            if(edgeIndexes[i] > this.largestIndex){
-                this.largestIndex = edgeIndexes[i]
+            if(edgeIndexes[i] > this.largestEdgeIndex){
+                this.largestEdgeIndex = edgeIndexes[i]
             }
         }
     }
@@ -70,58 +74,69 @@ export class Face {
 export class Mesh {
     rawVerts: Vector3[]
 
-    edgeMap: Map<number, number[]> = new Map()
-    edgeIndex: number[][]
+    //key = vertIndex, value = edgeIndex
+    vert2edgeMap: Map<number, number[]> = new Map()
+    edgeArr: number[][]
 
     //key = largestEdgeIndex, value = faceIndex
-    faceMap: Map<number, Face[]> = new Map()
-    faceIndex: Face[] = new Array()
+    vert2faceMap: Map<number, Face[]> = new Map()
+    faceArr: Face[] = new Array()
 
     constructor(verts : Vector3[], edges: number[][], faces:number[][]){
         this.rawVerts = verts
         for(let i=0;i<edges.length;i++){
-            this.createEdge(edges[i][0], edges[i][1])
+            this.createEdge(edges[i][0], edges[i][1], i)
         }
-        this.edgeIndex = edges
+        this.edgeArr = edges
 
         for(let i=0;i<faces.length;i++){
             this.createFace(faces[i])
         }
     }
 
-    createEdge(vertIndex1: number, vertIndex2: number){
-        if(this.edgeMap.has(vertIndex1)){
-            this.edgeMap.get(vertIndex1)?.push(vertIndex2)
-            this.edgeMap.get(vertIndex1)?.sort(
+    createEdge(vertIndex1: number, vertIndex2: number, edgeIndex: number){
+        if(this.vert2edgeMap.has(vertIndex1)){
+            this.vert2edgeMap.get(vertIndex1)?.push(edgeIndex)
+            this.vert2edgeMap.get(vertIndex1)?.sort(
                 function(a, b){
                     return a - b
                 }
             )
         }
         else{
-            this.edgeMap.set(vertIndex1, [vertIndex2])
+            this.vert2edgeMap.set(vertIndex1, [edgeIndex])
         }
 
-        if(this.edgeMap.has(vertIndex2)){
-            this.edgeMap.get(vertIndex2)?.push(vertIndex1)
-            this.edgeMap.get(vertIndex2)?.sort(
+        if(this.vert2edgeMap.has(vertIndex2)){
+            this.vert2edgeMap.get(vertIndex2)?.push(edgeIndex)
+            this.vert2edgeMap.get(vertIndex2)?.sort(
                 function(a, b){
                     return a - b
                 }
             )
         }
         else{
-            this.edgeMap.set(vertIndex2, [vertIndex1])
+            this.vert2edgeMap.set(vertIndex2, [edgeIndex])
         }
     }
 
     createFace(edgeIndexes:number[]){
         let face: Face = new Face(edgeIndexes)
-        if(this.faceMap.has(face.largestIndex)){
-            this.faceMap.get(face.largestIndex)?.push(face)
+
+        for(let i=0;i<face.edgeIndexes.length;i++){
+            if(this.edgeArr[face.edgeIndexes[i]][0] > face.largestVertIndex){
+                face.largestVertIndex = this.edgeArr[face.edgeIndexes[i]][0]
+            }
+            if(this.edgeArr[face.edgeIndexes[i]][1] > face.largestVertIndex){
+                face.largestVertIndex = this.edgeArr[face.edgeIndexes[i]][1]
+            }
+        }
+
+        if(this.vert2faceMap.has(face.largestVertIndex)){
+            this.vert2faceMap.get(face.largestVertIndex)?.push(face)
         }
         else{
-            this.faceMap.set(face.largestIndex, [face])
+            this.vert2faceMap.set(face.largestVertIndex, [face])
         }
     }
 }
