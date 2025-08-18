@@ -52,19 +52,42 @@ export class Object3D{
     }
 }
 
+export class Face {
+    edgeIndexes: number[]
+    largestIndex: number
+
+    constructor(edgeIndexes: number[]){
+        this.edgeIndexes = edgeIndexes
+        this.largestIndex = 0
+        for(let i=1;i<edgeIndexes.length;i++){
+            if(edgeIndexes[i] > this.largestIndex){
+                this.largestIndex = edgeIndexes[i]
+            }
+        }
+    }
+}
+
 export class Mesh {
     rawVerts: Vector3[]
 
     edgeMap: Map<number, number[]> = new Map()
-    faceMap: Map<number, number[][]> = new Map()
+    edgeIndex: number[][]
 
-    constructor(verts : Vector3[], edges: number[][]){
+    //key = largestEdgeIndex, value = faceIndex
+    faceMap: Map<number, Face[]> = new Map()
+    faceIndex: Face[] = new Array()
+
+    constructor(verts : Vector3[], edges: number[][], faces:number[][]){
         this.rawVerts = verts
         for(let i=0;i<edges.length;i++){
             this.createEdge(edges[i][0], edges[i][1])
         }
+        this.edgeIndex = edges
+
+        for(let i=0;i<faces.length;i++){
+            this.createFace(faces[i])
+        }
     }
-    
 
     createEdge(vertIndex1: number, vertIndex2: number){
         if(this.edgeMap.has(vertIndex1)){
@@ -92,38 +115,13 @@ export class Mesh {
         }
     }
 
-}
-
-
-export class Cube extends Mesh {
-
-    constructor(origin: Vector3, size: number){
-        let verts: Vector3[] = []
-        let edges: number[][] = []
-        let halfSize: number = size/2
-        verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x + halfSize, origin.y + halfSize, origin.z - halfSize))
-        verts.push(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x + halfSize, origin.y - halfSize, origin.z - halfSize))
-
-        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y + halfSize, origin.z - halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z + halfSize))
-        verts.push(new Vector3(origin.x - halfSize, origin.y - halfSize, origin.z - halfSize))
-
-        edges.push([0,1])
-        edges.push([0,2])
-        edges.push([0,4])
-        edges.push([1,3])
-        edges.push([1,5])
-        edges.push([2,3])
-        edges.push([2,6])
-        edges.push([3,7])
-        edges.push([4,5])
-        edges.push([4,6])
-        edges.push([5,7])
-        edges.push([6,7])
-        
-        super(verts, edges);
+    createFace(edgeIndexes:number[]){
+        let face: Face = new Face(edgeIndexes)
+        if(this.faceMap.has(face.largestIndex)){
+            this.faceMap.get(face.largestIndex)?.push(face)
+        }
+        else{
+            this.faceMap.set(face.largestIndex, [face])
+        }
     }
 }

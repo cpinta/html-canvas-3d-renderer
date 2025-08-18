@@ -40,6 +40,6 @@ export class Cube extends Mesh {
         faces.push([5,6,7,11])
         
         
-        super(verts, edges);
+        super(verts, edges, faces);
     }
 }

@@ -1,4 +1,5 @@
-import { Mesh, Object3D, Cube, Vector3 } from "./3D"
+import { Object3D, Vector3 } from "./3D"
+import { Cube } from "./Primitives"
 import { Vector2 } from "./2D"
 import { MMath } from "./Matrix"
 
