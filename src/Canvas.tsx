@@ -1,5 +1,4 @@
-import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
-import {MMath} from './Matrix';
+import { KeyboardEvent, useEffect, useRef } from 'react';
 import { Renderer } from './Renderer';
 
 interface CanvasProps {}
@@ -49,15 +48,18 @@ const Canvas = (props : CanvasProps) => {
         const render = () => {
             frameCount++
             if(true){
+                // let renderer: Renderer = new Renderer()
                 context.clearRect(0, 0, context.canvas.width, context.canvas.height)
                 context.fillStyle = '#000000'
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
                 renderer.current.draw(context, displayScale, deltaTime)
             }
-            animationFrameId = window.requestAnimationFrame(render)
-        }
-        render()
+            animationFrameId = window.requestAnimationFrame(() => {
+                render();
+            })
+        };
+        render();
 
         return () => {
             window.cancelAnimationFrame(animationFrameId)

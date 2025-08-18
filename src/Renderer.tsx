@@ -1,23 +1,22 @@
-import { Instance, Mesh, Vector3 } from "./3D"
+import { Mesh, Object3D, Cube, Vector3 } from "./3D"
 import { Vector2 } from "./2D"
 import { MMath } from "./Matrix"
-import { Cube } from "./Primitives"
 
 
 export class Renderer{
     
-    instances: Instance[] = []
+    meshes: Object3D[] = []
     camLoc: Vector3 = new Vector3(0, 0, -3)
     viewPlane: number = 1;
 
     constructor(){
         let cube: Cube = new Cube(new Vector3(0, 0, 0), 2)
-        let cubeInst: Instance = new Instance(cube)
-        this.instances.push(cubeInst)
+        let obj: Object3D = new Object3D(cube)
+        this.meshes.push(obj)
     }
     
     draw(ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number){
-        this.instances[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
+        this.meshes[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
         this.drawMeshes(ctx, scaleMultiplier)
     }
 
@@ -25,8 +24,8 @@ export class Renderer{
     drawMeshes(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
         let viewPlane = 90
 
-        for(let j=0;j<this.instances.length;j++){
-            let verts = this.instances[j].getWorldVerts()
+        for(let j=0;j<this.meshes.length;j++){
+            let verts = this.meshes[j].getWorldVerts()
             let screenSpaceVerts: Vector2[] = [] 
             for(let i=0;i<verts.length;i++){
                 let xdiff = verts[i].x - this.camLoc.x
@@ -49,8 +48,8 @@ export class Renderer{
 
                 screenSpaceVerts[i] = new Vector2(shortHorz, shortVert)
 
-                if(this.instances[j].mesh.edges.has(i)){
-                    let curEdges: number[] | undefined = this.instances[j].mesh.edges.get(i)
+                if(this.meshes[j].mesh.edgeMap.has(i)){
+                    let curEdges: number[] | undefined = this.meshes[j].mesh.edgeMap.get(i)
                     if(!curEdges){
                         continue
                     }
