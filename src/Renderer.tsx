@@ -118,7 +118,7 @@ export class Renderer{
 
                             ctx.lineTo(screenSpaceVerts[curEdge[nextIndex]].x, screenSpaceVerts[curEdge[nextIndex]].y)
                             
-                            ctx.fillStyle = '#AAAAFF'
+                            ctx.fillStyle = '#ffffff'
                             ctx.font = "24px Arial"
                             ctx.fillText(curEdge[nextIndex].toString(), screenSpaceVerts[curEdge[nextIndex]].x + 10, screenSpaceVerts[curEdge[nextIndex]].y + 10)
 
@@ -134,19 +134,13 @@ export class Renderer{
                             }
                         }
                         ctx.lineTo(screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].x, screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].y)
-                        ctx.fillStyle = '#AAAAFF'
+                        ctx.fillStyle = '#ffffff'
                         ctx.font = "24px Arial"
                         ctx.fillText(edge1[initialIndex].toString(), screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].x + 10, screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].y + 10)
 
                         averageDepth /= face.edgeIndexes.length * 2
-                        let hex = '#0000FF'
-                        if(i == 6){
-                            ctx.strokeStyle = '#00FF00'
-                            ctx.strokeText(averageDepth.toString(), 30, 30)
-                            let normalizedDepth = ((averageDepth + 0.8))/1.6
-                            // hex = '#'+decimalTo2DigitHex(Math.trunc(16 * normalizedDepth))+'00FF'
-                            hex = '#AAFFAA'
-                        }
+
+                        let hex = this.colors[facesDrawn]
 
 
                         ctx.fillStyle = hex
@@ -162,14 +156,22 @@ export class Renderer{
         }
         ctx.strokeStyle = '#00FF00'
         ctx.strokeText(linesDrawn.toString(), 20, 20)
+        ctx.strokeStyle = '#00FF00'
+        ctx.strokeText(facesDrawn.toString(), 20, 60)
 
     }
-}
 
-function decimalTo2DigitHex(decimalNumber: number) {
-  // Convert to hexadecimal string
-  let hexString = decimalNumber.toString(16);
+    colors = [
+        '#0000FF',
+        '#00AAEE',
+        '#EEAA00',
+        '#AAEEFF',
+        '#FF00AA',
+        '#AAAAFF',
+        '#00FFAA'
+    ]
 
-  // Pad with a leading zero if the length is less than 2
-  return hexString.padStart(2, '0');
+    drawPolygon(verts: number[]){
+        
+    }
 }
