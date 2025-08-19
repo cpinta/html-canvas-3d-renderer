@@ -31,12 +31,14 @@ export class Vector3 {
 }
 
 export class Object3D{
+    name: string = ""
     objectMatrix: number[][] = structuredClone(identityMatrix3)
     worldMatrix: number[][] = structuredClone(identityMatrix3)
     mesh: Mesh
 
-    constructor(mesh: Mesh){
+    constructor(mesh: Mesh, name = ""){
         this.mesh = mesh
+        this.name = name
     }
 
     getWorldVerts(): Vector3[]{

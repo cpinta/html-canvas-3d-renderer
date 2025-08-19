@@ -21,6 +21,9 @@ export class Renderer{
         this.drawMeshes(ctx, scaleMultiplier)
     }
 
+    setObj(obj: Object3D){
+        this.objects[0] = obj
+    }
 
     drawMeshes(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
         let viewPlane = 90

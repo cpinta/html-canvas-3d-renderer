@@ -1,11 +1,13 @@
 import { KeyboardEvent, useEffect, useRef } from 'react';
 import { Renderer } from './Renderer';
+import FileImport3D from './FileImport3D';
 
 interface CanvasProps {}
 
 const Canvas = (props : CanvasProps) => {
 
     const canvasRef = useRef(null);
+    const fileRef = useRef(null);
     const renderer = useRef(new Renderer())
 
     const prevTime = useRef<number>(Date.now());
@@ -80,16 +82,55 @@ const Canvas = (props : CanvasProps) => {
     }
 
     function handleKeyDown(e: KeyboardEvent) {
-        
+        if(e.code == 'KeyF'){
+            if(!fileRef.current){
+                return
+            }
+            let file : HTMLInputElement = fileRef.current
+            file.click()
+        }
+        console.log(e.code)
     }
     function handleKeyUp(e: KeyboardEvent) {
     }
 
+    function openFilePicker(){
+        if(!fileRef.current){return}
+        let fileElement : HTMLInputElement = fileRef.current
+        if(!fileElement.files){return}
+        let file = fileElement.files[0]
+        if(!file){return}
 
+        let reader: FileReader = new FileReader()
 
+        reader.onload = (e) => {
+            readFile(file.name, reader.result)
+        }
+
+        reader.readAsText(file)
+        // reader.readAsArrayBuffer(file)
+    }
+
+    function readFile(name: string, content: string | ArrayBuffer | null){
+        
+        console.log('file'+name)
+        if(name.endsWith('.obj')){
+            if(!content){
+                return
+            }
+            if(typeof(content) != "string"){
+                return
+            }
+            
+            renderer.current.setObj(FileImport3D.OBJ_Import(content))
+        }
+    }
 
     return(
-        <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:'0%'}} />
+        <>
+            <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:'0%'}} />
+            <input ref={fileRef} type='file' onChange={openFilePicker} />
+        </>
     );
 }
 
