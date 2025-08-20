@@ -55,7 +55,7 @@ const Canvas = (props : CanvasProps) => {
                 context.fillStyle = '#000000'
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-                renderer.current.draw(context, displayScale, deltaTime)
+                renderer.current.draw(canvas, context, displayScale, deltaTime)
             }
             animationFrameId = window.requestAnimationFrame(() => {
                 render();

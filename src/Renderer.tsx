@@ -7,8 +7,11 @@ import { MMath } from "./Matrix"
 export class Renderer{
     
     objects: Object3D[] = []
-    camLoc: Vector3 = new Vector3(0, 0, -2.25)
-    viewPlane: number = 1;
+    camLoc: Vector3 = new Vector3(0, 0, -3)
+    fov: number = 90;
+
+    nearPlane: number = 0
+    farPlane: number = 10
 
     constructor(){
         let cube: Cube = new Cube(new Vector3(0, 0, 0), 2)
@@ -16,27 +19,29 @@ export class Renderer{
         this.objects.push(obj)
     }
     
-    draw(ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number){
+    draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number){
         this.objects[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
-        this.drawMeshes(ctx, scaleMultiplier)
+        this.drawMeshes(canvas, ctx, scaleMultiplier)
     }
 
     setObj(obj: Object3D){
         this.objects[0] = obj
     }
 
-    drawMeshes(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
-        let viewPlane = 90
 
+    drawMeshes(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number){
         let linesDrawn = 0
         let facesDrawn = 0
+        let offScreens: MeshCanvasCombo[] = []
+        
         for(let j=0;j<this.objects.length;j++){
             let obj: Object3D = this.objects[j]
             let mesh: Mesh = obj.mesh
+
             let verts = obj.getWorldVerts()
             ctx.fillStyle = '#FF0000'
 
-            let screenSpaceVerts: Vector2[] = [] 
+            let screenSpaceVerts: Vector3[] = [] 
             let screenSpaceEdges: number[]
             for(let i=0;i<verts.length;i++){
                 let xdiff = verts[i].x - this.camLoc.x
@@ -48,8 +53,8 @@ export class Renderer{
                 let vertAngle = Math.atan(ydiff/zdiff)
                 let horzAngle = Math.atan(xdiff/zdiff)
 
-                let shortVert = Math.tan(vertAngle) * viewPlane
-                let shortHorz = Math.tan(horzAngle) * viewPlane
+                let shortVert = Math.tan(vertAngle) * this.fov
+                let shortHorz = Math.tan(horzAngle) * this.fov
 
                 shortHorz *= scaleMultiplier
                 shortVert *= scaleMultiplier
@@ -57,7 +62,7 @@ export class Renderer{
                 shortVert += ctx.canvas.height/2
                 
 
-                screenSpaceVerts[i] = new Vector2(shortHorz, shortVert)
+                screenSpaceVerts[i] = new Vector3(shortHorz, shortVert, zdiff)
 
 
                 ctx.strokeStyle = '#FF0000'
@@ -90,7 +95,11 @@ export class Renderer{
                     let vertIndex: number = 0
                     for(let l=0;l<faces.length;l++){
                         let face: Face = faces[l]
-                        ctx.beginPath()
+
+                        offScreens.push(new MeshCanvasCombo(new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height)))
+                        let octx: OffscreenCanvasRenderingContext2D = offScreens[offScreens.length-1].osc.getContext("2d") as OffscreenCanvasRenderingContext2D
+
+                        octx.beginPath()
 
                         let initialIndex: number = 0
                         let nextIndex: number = 0
@@ -101,14 +110,14 @@ export class Renderer{
                         let edge2:number[] = mesh.edgeArr[face.edgeIndexes[1]]
                         
                         if(edge1[0] == edge2[0]){
-                            ctx.moveTo(screenSpaceVerts[edge1[1]].x, screenSpaceVerts[edge1[1]].y)
-                            ctx.lineTo(screenSpaceVerts[edge1[0]].x, screenSpaceVerts[edge1[0]].y)
+                            octx.moveTo(screenSpaceVerts[edge1[1]].x, screenSpaceVerts[edge1[1]].y)
+                            octx.lineTo(screenSpaceVerts[edge1[0]].x, screenSpaceVerts[edge1[0]].y)
                             nextIndex = 1
                             initialIndex = 1
                         }
                         else{
-                            ctx.moveTo(screenSpaceVerts[edge1[0]].x, screenSpaceVerts[edge1[0]].y)
-                            ctx.lineTo(screenSpaceVerts[edge1[1]].x, screenSpaceVerts[edge1[1]].y)
+                            octx.moveTo(screenSpaceVerts[edge1[0]].x, screenSpaceVerts[edge1[0]].y)
+                            octx.lineTo(screenSpaceVerts[edge1[1]].x, screenSpaceVerts[edge1[1]].y)
                             nextIndex = 1
                             initialIndex = 0
                         }
@@ -119,11 +128,11 @@ export class Renderer{
                             let edgeIndex: number = face.edgeIndexes[m]
                             let curEdge:number[] = mesh.edgeArr[edgeIndex]
 
-                            ctx.lineTo(screenSpaceVerts[curEdge[nextIndex]].x, screenSpaceVerts[curEdge[nextIndex]].y)
+                            octx.lineTo(screenSpaceVerts[curEdge[nextIndex]].x, screenSpaceVerts[curEdge[nextIndex]].y)
                             
-                            ctx.fillStyle = '#ffffff'
-                            ctx.font = "24px Arial"
-                            ctx.fillText(curEdge[nextIndex].toString(), screenSpaceVerts[curEdge[nextIndex]].x + 10, screenSpaceVerts[curEdge[nextIndex]].y + 10)
+                            octx.fillStyle = '#ffffff'
+                            octx.font = "24px Arial"
+                            octx.fillText(curEdge[nextIndex].toString(), screenSpaceVerts[curEdge[nextIndex]].x + 10, screenSpaceVerts[curEdge[nextIndex]].y + 10)
 
                             averageDepth += verts[curEdge[nextIndex]].z
 
@@ -136,26 +145,38 @@ export class Renderer{
                                 }
                             }
                         }
-                        ctx.lineTo(screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].x, screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].y)
-                        ctx.fillStyle = '#ffffff'
-                        ctx.font = "24px Arial"
-                        ctx.fillText(edge1[initialIndex].toString(), screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].x + 10, screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].y + 10)
+                        octx.lineTo(screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].x, screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].y)
+                        octx.fillStyle = '#ffffff'
+                        octx.font = "24px Arial"
+                        octx.fillText(edge1[initialIndex].toString(), screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].x + 10, screenSpaceVerts[mesh.edgeArr[face.edgeIndexes[0]][initialIndex]].y + 10)
 
                         averageDepth /= face.edgeIndexes.length * 2
+                        offScreens[offScreens.length-1].depth = averageDepth
+                        offScreens.sort(
+                            function(a, b){
+                                return b.depth - a.depth
+                            }
+                        )
 
                         let hex = this.colors[facesDrawn]
 
 
-                        ctx.fillStyle = hex
-                        ctx.strokeStyle = hex
-                        ctx.closePath()
-                        ctx.fill()
+                        octx.fillStyle = hex
+                        octx.strokeStyle = hex
+                        octx.closePath()
+                        octx.fill()
                         facesDrawn++
                     }
                 }
 
                 // ctx.fillRect(shortHorz*4, shortVert*4, 1, 1)
             }
+        }
+
+        for(let i=0;i<offScreens.length;i++){
+            let bitmap = offScreens[i].osc.transferToImageBitmap()
+            
+            ctx.drawImage(bitmap, 0,0)
         }
         ctx.strokeStyle = '#00FF00'
         ctx.strokeText(linesDrawn.toString(), 20, 20)
@@ -176,5 +197,14 @@ export class Renderer{
 
     drawPolygon(verts: number[]){
         
+    }
+}
+
+class MeshCanvasCombo {
+    depth: number = -1
+    osc: OffscreenCanvas
+
+    constructor(osc: OffscreenCanvas){
+        this.osc = osc
     }
 }
