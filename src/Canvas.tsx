@@ -12,6 +12,7 @@ const Canvas = (props : CanvasProps) => {
 
     const prevTime = useRef<number>(Date.now());
     const timeSinceStart = useRef<number>(0);
+    const fps = useRef<number>(0);
 
 
     const randomColor = () => {
@@ -34,14 +35,14 @@ const Canvas = (props : CanvasProps) => {
 
         let frameCount = 0
         let animationFrameId : number
-        let deltaTime = (Date.now() - prevTime.current)/1000;
-        timeSinceStart.current += deltaTime;
+        let updateFPSevery: number = 20
 
-        let displayScale = 4
+        let displayScale = 2
         canvas.width = 512 * displayScale
         canvas.height = 288 * displayScale
 
         context.imageSmoothingEnabled = false;
+        // context.imageSmoothingQuality = "high"
         context.lineWidth = 1
         context.strokeStyle = '#FF0000'
 
@@ -50,12 +51,20 @@ const Canvas = (props : CanvasProps) => {
         const render = () => {
             frameCount++
             if(true){
+                let deltaTime: number = (Date.now() - prevTime.current)/1000;
+                prevTime.current = Date.now()
+                timeSinceStart.current += deltaTime;
                 // let renderer: Renderer = new Renderer()
                 context.clearRect(0, 0, context.canvas.width, context.canvas.height)
                 context.fillStyle = '#000000'
                 context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-                renderer.current.draw(canvas, context, displayScale, deltaTime)
+                renderer.current.draw(canvas, context, displayScale, deltaTime, frameCount)
+
+                if(frameCount % updateFPSevery == 0){
+                    fps.current = Math.trunc(1/deltaTime)
+                }
+                    context.fillText(fps.current.toString(), 20, 100)
             }
             animationFrameId = window.requestAnimationFrame(() => {
                 render();
@@ -128,7 +137,7 @@ const Canvas = (props : CanvasProps) => {
 
     return(
         <>
-            <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:'0%'}} />
+            <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:'0%', imageRendering: 'pixelated'}} />
             <input ref={fileRef} type='file' onChange={openFilePicker} />
         </>
     );

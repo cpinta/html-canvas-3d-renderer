@@ -19,7 +19,7 @@ export class Renderer{
         this.objects.push(obj)
     }
     
-    draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number){
+    draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number, frameCount: number){
         this.objects[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
         this.drawMeshes(canvas, ctx, scaleMultiplier)
     }
@@ -178,10 +178,9 @@ export class Renderer{
             
             ctx.drawImage(bitmap, 0,0)
         }
-        ctx.strokeStyle = '#00FF00'
-        ctx.strokeText(linesDrawn.toString(), 20, 20)
-        ctx.strokeStyle = '#00FF00'
-        ctx.strokeText(facesDrawn.toString(), 20, 60)
+        ctx.fillStyle = '#00FF00'
+        ctx.fillText(linesDrawn.toString(), 20, 20)
+        ctx.fillText(facesDrawn.toString(), 20, 60)
 
     }
 
