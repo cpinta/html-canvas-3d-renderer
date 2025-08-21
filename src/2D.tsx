@@ -12,7 +12,7 @@ export class Color {
     r: number
     g: number
     b: number
-    a?: number // optional property
+    a: number // optional property
     hex: string
 
     constructor(r:number,g:number,b:number,a:number=1){
@@ -20,20 +20,26 @@ export class Color {
         this.g = g
         this.b = b
         this.a = a
-        this.hex = this.toHex(a != -1)
+        this.hex = this._toHex()
     }
 
-    toHex(includeAlpha = false){
-        if(includeAlpha){
-            if(!this.a){
-                return "#"+this.r.toString(16)+this.g.toString(16)+this.b.toString(16)
-            }
-            return "#"+this.r.toString(16)+this.g.toString(16)+this.b.toString(16)+this.a.toString(16)
+    _toHex(){
+        let str: string = '#'
+        str += this._toTwoHex(this.r)
+        str += this._toTwoHex(this.g)
+        str += this._toTwoHex(this.b)
+        str += this._toTwoHex(this.a*255)
+        
+        return str
+    }
+
+    _toTwoHex(num: number){
+        let str = num.toString(16)
+        if(str.length == 1){
+            str = "0" + str
         }
-        return "#"+this.r.toString(16)+this.g.toString(16)+this.b.toString(16)
+        return str
     }
-
-
 
     static fromHex(hex:string){
         if(hex.startsWith('#')){
@@ -55,7 +61,7 @@ export class Color {
             g = parseInt(hex.slice(2, 4), 16)
             b = parseInt(hex.slice(4, 6), 16)
             if(hex.length == 8){
-                a =  parseInt(hex.slice(6, 8), 16)
+                a =  parseInt(hex.slice(6, 8), 16)/255
             }
 
             return new Color(r, g, b, a)
