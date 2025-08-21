@@ -33,6 +33,7 @@ export class Renderer{
         let linesDrawn = 0
         let facesDrawn = 0
         let offScreens: MeshCanvasCombo[] = []
+        let screenSpaceVerts: Vector3[] = [] 
         
         for(let j=0;j<this.objects.length;j++){
             let obj: Object3D = this.objects[j]
@@ -41,8 +42,6 @@ export class Renderer{
             let verts = obj.getWorldVerts()
             ctx.fillStyle = '#FF0000'
 
-            let screenSpaceVerts: Vector3[] = [] 
-            let screenSpaceEdges: number[]
             for(let i=0;i<verts.length;i++){
                 let xdiff = verts[i].x - this.camLoc.x
                 let ydiff = verts[i].y - this.camLoc.y
@@ -73,45 +72,31 @@ export class Renderer{
                         let face: Face = mesh.faceArr[faceIndexes[l]]
                         console.log(faceIndexes[l])
 
-                        offScreens.push(new MeshCanvasCombo(new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height)))
-                        let octx: OffscreenCanvasRenderingContext2D = offScreens[offScreens.length-1].osc.getContext("2d") as OffscreenCanvasRenderingContext2D
+                        let hex = this.colors[facesDrawn % this.colors.length]
 
-                        octx.beginPath()
+                        offScreens.push(new MeshCanvasCombo(null, face, hex))
+                        // let octx: OffscreenCanvasRenderingContext2D = offScreens[offScreens.length-1].osc.getContext("2d") as OffscreenCanvasRenderingContext2D
 
                         let averageDepth: number = 0
 
                         for(let m=0;m<face.vertIndexes.length;m++){
-                            let vertIndex: number = face.vertIndexes[m]
-
-                            octx.lineTo(screenSpaceVerts[face.vertIndexes[m]].x, screenSpaceVerts[face.vertIndexes[m]].y)
-                            
-                            // octx.fillStyle = '#ffffff'
-                            // octx.font = "24px Arial"
-                            // octx.fillText(m.toString(), screenSpaceVerts[face.vertIndexes[m]].x + 10, screenSpaceVerts[face.vertIndexes[m]].y + 10)
-
                             averageDepth += screenSpaceVerts[face.vertIndexes[m]].z
-
                         }
-                        octx.lineTo(screenSpaceVerts[face.vertIndexes[0]].x, screenSpaceVerts[face.vertIndexes[0]].y)
-                        // octx.fillStyle = '#ffffff'
-                        // octx.font = "24px Arial"
-                        // octx.fillText('0', screenSpaceVerts[face.vertIndexes[0]].x + 10, screenSpaceVerts[face.vertIndexes[0]].y + 10)
 
                         averageDepth /= face.vertIndexes.length * 2
+
+
+                        offScreens[offScreens.length-1].face = face
                         offScreens[offScreens.length-1].depth = averageDepth
+                        offScreens[offScreens.length-1].color = hex
                         offScreens.sort(
                             function(a, b){
                                 return b.depth - a.depth
                             }
                         )
 
-                        let hex = this.colors[facesDrawn % this.colors.length]
 
 
-                        octx.fillStyle = hex
-                        octx.strokeStyle = hex
-                        octx.closePath()
-                        octx.fill()
                         facesDrawn++
                     }
                 }
@@ -121,9 +106,10 @@ export class Renderer{
         }
 
         for(let i=0;i<offScreens.length;i++){
-            let bitmap = offScreens[i].osc.transferToImageBitmap()
+            // let bitmap = offScreens[i].osc.transferToImageBitmap()
             
-            ctx.drawImage(bitmap, 0,0)
+            // ctx.drawImage(bitmap, 0,0)
+            this.drawPolygon2(ctx, screenSpaceVerts, offScreens[i].face, facesDrawn, offScreens[i].color)
         }
         ctx.fillStyle = '#00FF00'
         ctx.fillText(linesDrawn.toString(), 20, 20)
@@ -132,8 +118,35 @@ export class Renderer{
     }
 
 
-    drawPolygon(verts: number[]){
-        
+    drawPolygon(octx: OffscreenCanvasRenderingContext2D, screenSpaceVerts: Vector3[], face: Face, facesDrawn: number){
+        octx.beginPath()
+
+        for(let m=0;m<face.vertIndexes.length;m++){
+            octx.lineTo(screenSpaceVerts[face.vertIndexes[m]].x, screenSpaceVerts[face.vertIndexes[m]].y)
+        }
+        octx.lineTo(screenSpaceVerts[face.vertIndexes[0]].x, screenSpaceVerts[face.vertIndexes[0]].y)
+
+        let hex = this.colors[facesDrawn % this.colors.length]
+
+        octx.fillStyle = hex
+        octx.strokeStyle = hex
+        octx.closePath()
+        octx.fill()
+    }
+
+    drawPolygon2(octx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], face: Face, facesDrawn: number, color: string){
+        octx.beginPath()
+
+        for(let m=0;m<face.vertIndexes.length;m++){
+            octx.lineTo(screenSpaceVerts[face.vertIndexes[m]].x, screenSpaceVerts[face.vertIndexes[m]].y)
+        }
+        octx.lineTo(screenSpaceVerts[face.vertIndexes[0]].x, screenSpaceVerts[face.vertIndexes[0]].y)
+
+
+        octx.fillStyle = color
+        octx.strokeStyle = color
+        octx.closePath()
+        octx.fill()
     }
 
     
@@ -150,9 +163,13 @@ export class Renderer{
 
 export class MeshCanvasCombo {
     depth: number = -1
-    osc: OffscreenCanvas
+    face: Face
+    osc: OffscreenCanvas | null
+    color: string
 
-    constructor(osc: OffscreenCanvas){
+    constructor(osc: OffscreenCanvas | null, face: Face, color: string){
         this.osc = osc
+        this.face = face
+        this.color = color
     }
 }
