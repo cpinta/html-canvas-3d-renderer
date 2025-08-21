@@ -1,6 +1,6 @@
 import { Object3D, Vector3, Face, Mesh } from "./3D"
 import { Cube } from "./Primitives"
-import { Vector2 } from "./2D"
+import { Color, Vector2 } from "./2D"
 import { MMath } from "./Matrix"
 
 
@@ -13,10 +13,24 @@ export class Renderer{
     nearPlane: number = 0
     farPlane: number = 10
 
+    
+    colors: Color[] = []
+
     constructor(){
         let cube: Cube = new Cube(new Vector3(0, 0, 0), 2)
         let obj: Object3D = new Object3D(cube)
         this.objects.push(obj)
+
+        this.colors = [
+            
+            Color.fromHex('#0000FF'),
+            Color.fromHex('#00AAEE'),
+            Color.fromHex('#EEAA00'),
+            Color.fromHex('#AAEEFF'),
+            Color.fromHex('#FF00AA'),
+            Color.fromHex('#AAAAFF'),
+            Color.fromHex('#00FFAA')
+        ]
     }
     
     draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number, frameCount: number){
@@ -70,11 +84,13 @@ export class Renderer{
                     
                     for(let l=0;l<faceIndexes.length;l++){
                         let face: Face = mesh.faceArr[faceIndexes[l]]
-                        console.log(faceIndexes[l])
 
-                        let hex = this.colors[facesDrawn % this.colors.length]
+                        if(faceIndexes[l] == 1){
+                            console.log(this.colors[facesDrawn % this.colors.length])
+                        }
+                        let color = this.colors[facesDrawn % this.colors.length]
 
-                        offScreens.push(new MeshCanvasCombo(null, face, hex))
+                        offScreens.push(new MeshCanvasCombo(null, face, color))
                         // let octx: OffscreenCanvasRenderingContext2D = offScreens[offScreens.length-1].osc.getContext("2d") as OffscreenCanvasRenderingContext2D
 
                         let averageDepth: number = 0
@@ -88,14 +104,12 @@ export class Renderer{
 
                         offScreens[offScreens.length-1].face = face
                         offScreens[offScreens.length-1].depth = averageDepth
-                        offScreens[offScreens.length-1].color = hex
+                        offScreens[offScreens.length-1].color = color
                         offScreens.sort(
                             function(a, b){
                                 return b.depth - a.depth
                             }
                         )
-
-
 
                         facesDrawn++
                     }
@@ -109,7 +123,7 @@ export class Renderer{
             // let bitmap = offScreens[i].osc.transferToImageBitmap()
             
             // ctx.drawImage(bitmap, 0,0)
-            this.drawPolygon2(ctx, screenSpaceVerts, offScreens[i].face, facesDrawn, offScreens[i].color)
+            this.drawPolygon(ctx, screenSpaceVerts, offScreens[i].face, facesDrawn, offScreens[i].color)
         }
         ctx.fillStyle = '#00FF00'
         ctx.fillText(linesDrawn.toString(), 20, 20)
@@ -117,24 +131,7 @@ export class Renderer{
 
     }
 
-
-    drawPolygon(octx: OffscreenCanvasRenderingContext2D, screenSpaceVerts: Vector3[], face: Face, facesDrawn: number){
-        octx.beginPath()
-
-        for(let m=0;m<face.vertIndexes.length;m++){
-            octx.lineTo(screenSpaceVerts[face.vertIndexes[m]].x, screenSpaceVerts[face.vertIndexes[m]].y)
-        }
-        octx.lineTo(screenSpaceVerts[face.vertIndexes[0]].x, screenSpaceVerts[face.vertIndexes[0]].y)
-
-        let hex = this.colors[facesDrawn % this.colors.length]
-
-        octx.fillStyle = hex
-        octx.strokeStyle = hex
-        octx.closePath()
-        octx.fill()
-    }
-
-    drawPolygon2(octx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], face: Face, facesDrawn: number, color: string){
+    drawPolygon(octx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], face: Face, facesDrawn: number, color: Color){
         octx.beginPath()
 
         for(let m=0;m<face.vertIndexes.length;m++){
@@ -143,31 +140,20 @@ export class Renderer{
         octx.lineTo(screenSpaceVerts[face.vertIndexes[0]].x, screenSpaceVerts[face.vertIndexes[0]].y)
 
 
-        octx.fillStyle = color
-        octx.strokeStyle = color
+        octx.fillStyle = color.hex
+        octx.strokeStyle = color.hex
         octx.closePath()
         octx.fill()
     }
-
-    
-    colors = [
-        '#0000FF',
-        '#00AAEE',
-        '#EEAA00',
-        '#AAEEFF',
-        '#FF00AA',
-        '#AAAAFF',
-        '#00FFAA'
-    ]
 }
 
 export class MeshCanvasCombo {
     depth: number = -1
     face: Face
     osc: OffscreenCanvas | null
-    color: string
+    color: Color
 
-    constructor(osc: OffscreenCanvas | null, face: Face, color: string){
+    constructor(osc: OffscreenCanvas | null, face: Face, color: Color){
         this.osc = osc
         this.face = face
         this.color = color
