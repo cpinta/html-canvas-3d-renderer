@@ -4,7 +4,6 @@ class FileImport3D{
     static OBJ_Import(fileContent: string){
         let objName: string = ""
         let verts: Vector3[] = []
-        let edges: number[][] = []
         let faces: number[][] = []
 
         let list: string[] = fileContent.split("\n")
@@ -21,16 +20,12 @@ class FileImport3D{
                     let face: number[] = []
                     for(let j=1;j<args.length;j++){
                         let vertInds: string[] = args[j].split("/")
+                        if(j==1 && vertInds[0]=="16"){
+                            let temp = 0
+                        }
                         face.push(Number.parseInt(vertInds[0]) - 1)
                     }
-                    let j=0;
-                    let k=1;
-                    while(k <= face.length){
-                        edges.push([face[j], face[k]])
-                        j++
-                        k++
-                    }
-                    edges.push([face[face.length-1], face[0]])
+                    faces.push(face)
                     break
                 case "#":
                     break
@@ -39,9 +34,13 @@ class FileImport3D{
             }
         }
 
-        let mesh = new Mesh(verts, edges, faces)
+        let mesh = new Mesh(verts, faces)
         let obj = new Object3D(mesh, objName)
         return obj
+    }
+
+    static GITF_Import(fileContent: string){
+
     }
 }
 
