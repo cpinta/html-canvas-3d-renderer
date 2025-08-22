@@ -1,7 +1,7 @@
 import { Object3D, Vector3, Face, Mesh } from "./3D"
 import { Cube } from "./Primitives"
 import { Color, Vector2 } from "./2D"
-import { MMath } from "./Matrix"
+import { identityMatrix4, MMath } from "./Matrix"
 
 
 export class Renderer{
@@ -32,15 +32,25 @@ export class Renderer{
             Color.fromHex('#00FFAA')
         ]
     }
+
+    displayMatrix(ctx: CanvasRenderingContext2D, mat:number[][], offset: Vector2){
+        for(let k=0;k<mat[0].length;k++){
+            for(let l=0; l<mat.length;l++){
+                ctx.fillText((Math.trunc(mat[l][k] * 100) / 100).toString(), k*30 + offset.x, (l*18) + offset.y)
+            }
+        }
+    }
     
     draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number, frameCount: number){
-        this.objects[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
-        // this.objects[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
+        this.objects[0].wRotate(new Vector3(0, 0, 1 * deltaTime))
+        // this.objects[0].wPosition(new Vector3(1, 1, 1))
+        this.objects[0].wPosition(new Vector3(0, 0, 1 * deltaTime))
         this.drawMeshes(canvas, ctx, scaleMultiplier)
     }
 
     setObj(obj: Object3D){
         this.objects[0] = obj
+        this.objects[0].worldMatrix = identityMatrix4
     }
 
 

@@ -4,24 +4,27 @@ export class MMath {
 
     static Rx(theta: number): number[][]{
         return [
-            [1,0,0],
-            [0, Math.cos(theta), -Math.sin(theta)],
-            [0, Math.sin(theta), Math.cos(theta)]
+            [1,0,0,0],
+            [0, Math.cos(theta), -Math.sin(theta),0],
+            [0, Math.sin(theta), Math.cos(theta),0],
+            [0,0,0,1]
         ]
     }
     static Ry(theta: number): number[][]{
         return [
-            [Math.cos(theta),0,Math.sin(theta)],
-            [0, 1, 0],
-            [-Math.sin(theta), 0, Math.cos(theta)]
+            [Math.cos(theta),0,Math.sin(theta),0],
+            [0, 1, 0,0],
+            [-Math.sin(theta), 0, Math.cos(theta),0],
+            [0,0,0,1]
 
         ]
     }
     static Rz(theta: number): number[][]{
         return [
-            [Math.cos(theta),-Math.sin(theta),0],
-            [Math.sin(theta), Math.cos(theta),0],
-            [0, 0, 1]
+            [Math.cos(theta),-Math.sin(theta),0,0],
+            [Math.sin(theta), Math.cos(theta),0,0],
+            [0, 0, 1,0],
+            [0,0,0,1]
         ]
     }
 
@@ -30,10 +33,11 @@ export class MMath {
     }
 
     static move(matrix: number[][], offset: Vector3){
-        let idMatrix = structuredClone(identityMatrix3)
+        let idMatrix = structuredClone(identityMatrix4)
         idMatrix[0][3] = offset.x;
         idMatrix[1][3] = offset.y;
         idMatrix[2][3] = offset.z;
+        idMatrix[3][3] = 1;
         return MMath.multiply(matrix, idMatrix);
     }
 

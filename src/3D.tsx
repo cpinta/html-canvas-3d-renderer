@@ -3,8 +3,8 @@ import { identityMatrix3, identityMatrix4, MMath } from "./Matrix"
 
 export class Object3D{
     name: string = ""
-    objectMatrix: number[][] = structuredClone(identityMatrix3)
-    worldMatrix: number[][] = structuredClone(identityMatrix3)
+    objectMatrix: number[][] = structuredClone(identityMatrix4)
+    worldMatrix: number[][] = structuredClone(identityMatrix4)
     mesh: Mesh
 
     constructor(mesh: Mesh, name = ""){
@@ -15,13 +15,17 @@ export class Object3D{
     getWorldVerts(): Vector3[]{
        let worldVerts: Vector3[] = []
         for(let i = 0; i < this.mesh.rawVerts.length; i++){
-            worldVerts[i] = MMath.toVector3(MMath.multiply(this.worldMatrix, this.mesh.rawVerts[i].toMatrix3()))
+            worldVerts[i] = MMath.toVector3(MMath.multiply(this.worldMatrix, this.mesh.rawVerts[i].toMatrix4()))
         }
        return worldVerts
     }
     
     wRotate(rotation: Vector3){
         this.worldMatrix = MMath.rotate(this.worldMatrix, rotation)
+    }
+
+    wPosition(position: Vector3){
+        this.worldMatrix = MMath.move(this.worldMatrix, position)
     }
 }
 
@@ -94,5 +98,8 @@ export class Vector3 {
 
     toMatrix3(): number[][]{
         return [[this.x],[this.y],[this.z]]
+    }
+    toMatrix4(): number[][]{
+        return [[this.x],[this.y],[this.z],[1]]
     }
 }
