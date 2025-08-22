@@ -12,18 +12,16 @@ export class Color {
     r: number
     g: number
     b: number
-    a: number // optional property
-    hex: string
+    a: number
 
     constructor(r:number,g:number,b:number,a:number=1){
         this.r = r
         this.g = g
         this.b = b
         this.a = a
-        this.hex = this._toHex()
     }
 
-    _toHex(){
+    toHex(){
         let str: string = '#'
         str += this._toTwoHex(this.r)
         str += this._toTwoHex(this.g)
@@ -39,6 +37,10 @@ export class Color {
             str = "0" + str
         }
         return str
+    }
+
+    rgbaString(){
+        return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`
     }
 
     static fromHex(hex:string){

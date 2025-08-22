@@ -140,8 +140,8 @@ export class Renderer{
         octx.lineTo(screenSpaceVerts[face.vertIndexes[0]].x, screenSpaceVerts[face.vertIndexes[0]].y)
 
 
-        octx.fillStyle = color.hex
-        octx.strokeStyle = color.hex
+        octx.fillStyle = color.rgbaString()
+        octx.strokeStyle = color.rgbaString()
         octx.closePath()
         octx.fill()
     }
