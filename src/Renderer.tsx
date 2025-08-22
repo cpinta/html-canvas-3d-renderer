@@ -10,8 +10,8 @@ export class Renderer{
     camLoc: Vector3 = new Vector3(0, 0, -3)
     fov: number = 90;
 
-    nearPlane: number = 0
-    farPlane: number = 10
+    nearPlane: number = 1
+    farPlane: number = 2
 
     
     colors: Color[] = []
@@ -35,6 +35,7 @@ export class Renderer{
     
     draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number, frameCount: number){
         this.objects[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
+        // this.objects[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
         this.drawMeshes(canvas, ctx, scaleMultiplier)
     }
 
@@ -105,11 +106,6 @@ export class Renderer{
                         offScreens[offScreens.length-1].face = face
                         offScreens[offScreens.length-1].depth = averageDepth
                         offScreens[offScreens.length-1].color = color
-                        offScreens.sort(
-                            function(a, b){
-                                return b.depth - a.depth
-                            }
-                        )
 
                         facesDrawn++
                     }
@@ -118,12 +114,17 @@ export class Renderer{
                 // ctx.fillRect(shortHorz*4, shortVert*4, 1, 1)
             }
         }
+        offScreens.sort(
+            function(a, b){
+                return b.depth - a.depth
+            }
+        )
 
         for(let i=0;i<offScreens.length;i++){
             // let bitmap = offScreens[i].osc.transferToImageBitmap()
             
             // ctx.drawImage(bitmap, 0,0)
-            this.drawPolygon(ctx, screenSpaceVerts, offScreens[i].face, facesDrawn, offScreens[i].color)
+            this.drawPolygon(ctx, screenSpaceVerts, offScreens[i].face, facesDrawn, offScreens[i].color, offScreens[i].depth)
         }
         ctx.fillStyle = '#00FF00'
         ctx.fillText(linesDrawn.toString(), 20, 20)
@@ -131,7 +132,7 @@ export class Renderer{
 
     }
 
-    drawPolygon(octx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], face: Face, facesDrawn: number, color: Color){
+    drawPolygon(octx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], face: Face, facesDrawn: number, color: Color, depth: number){
         octx.beginPath()
 
         for(let m=0;m<face.vertIndexes.length;m++){
@@ -139,10 +140,23 @@ export class Renderer{
         }
         octx.lineTo(screenSpaceVerts[face.vertIndexes[0]].x, screenSpaceVerts[face.vertIndexes[0]].y)
 
+        let newColor: Color = new Color(color.r, color.g, color.b, color.a)
 
-        octx.fillStyle = color.rgbaString()
-        octx.strokeStyle = color.rgbaString()
+        let newZ: number = ((this.farPlane)/(this.farPlane - this.nearPlane)) + 1/depth *((-this.farPlane * this.nearPlane)/(this.farPlane - this.nearPlane))
+
+        newColor.r = color.r -(color.r * newZ);
+        newColor.g = color.g -(color.g * newZ);
+        newColor.b = color.b -(color.b * newZ);
+
+        // octx.fillStyle = 'white'
+        // octx.fillText(newZ.toString(), screenSpaceVerts[face.vertIndexes[1]].x, screenSpaceVerts[face.vertIndexes[1]].y)
+
+        octx.fillStyle = newColor.rgbaString()
+        octx.strokeStyle = newColor.rgbaString()
+
+
         octx.closePath()
+        octx.stroke()
         octx.fill()
     }
 }
