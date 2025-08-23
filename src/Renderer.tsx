@@ -42,10 +42,12 @@ export class Renderer{
     }
     
     draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number, frameCount: number){
-        this.objects[0].wRotate(new Vector3(0, 0, 1 * deltaTime))
-        // this.objects[0].wPosition(new Vector3(1, 1, 1))
-        this.objects[0].wPosition(new Vector3(0, 0, 1 * deltaTime))
+        this.objects[0].lRotate(new Vector3(0, 1 * deltaTime, 0))
+        this.objects[0].wPosition(new Vector3(0, 0, 1* deltaTime))
+        // this.objects[0].wPosition(new Vector3(0, 0, 1 * deltaTime))
         this.drawMeshes(canvas, ctx, scaleMultiplier)
+        this.displayMatrix(ctx, this.objects[0].localMatrix, new Vector2(40, 20))
+        this.displayMatrix(ctx, this.objects[0].worldMatrix, new Vector2(200, 20))
     }
 
     setObj(obj: Object3D){

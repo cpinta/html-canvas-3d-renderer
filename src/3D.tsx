@@ -1,32 +1,58 @@
 
 import { identityMatrix3, identityMatrix4, MMath } from "./Matrix"
 
-export class Object3D{
-    name: string = ""
-    objectMatrix: number[][] = structuredClone(identityMatrix4)
+
+export class Transform3D{
+    localMatrix: number[][] = structuredClone(identityMatrix4)
     worldMatrix: number[][] = structuredClone(identityMatrix4)
-    mesh: Mesh
-
-    constructor(mesh: Mesh, name = ""){
-        this.mesh = mesh
-        this.name = name
-    }
-
-    getWorldVerts(): Vector3[]{
-       let worldVerts: Vector3[] = []
-        for(let i = 0; i < this.mesh.rawVerts.length; i++){
-            worldVerts[i] = MMath.toVector3(MMath.multiply(this.worldMatrix, this.mesh.rawVerts[i].toMatrix4()))
-        }
-       return worldVerts
-    }
     
     wRotate(rotation: Vector3){
         this.worldMatrix = MMath.rotate(this.worldMatrix, rotation)
     }
 
+    lRotate(rotation: Vector3){
+        this.localMatrix = MMath.rotate(this.localMatrix, rotation)
+    }
+
     wPosition(position: Vector3){
         this.worldMatrix = MMath.move(this.worldMatrix, position)
     }
+
+    lPosition(position: Vector3){
+        this.localMatrix = MMath.move(this.localMatrix, position)
+    }
+}
+
+export class Object3D extends Transform3D{
+    name: string = ""
+    mesh: Mesh
+    
+    constructor(mesh: Mesh, name = ""){
+        super()
+        this.mesh = mesh
+        this.name = name
+    }
+
+    getWorldVerts(): Vector3[]{
+        let worldVerts: Vector3[] = this.getLocalVerts()
+        for(let i = 0; i < this.mesh.rawVerts.length; i++){
+            worldVerts[i] = MMath.toVector3(MMath.multiply(this.worldMatrix, worldVerts[i].toMatrix4()))
+        }
+        return worldVerts
+    }
+
+    getLocalVerts(): Vector3[]{
+        let localVerts: Vector3[] = []
+        for(let i = 0; i < this.mesh.rawVerts.length; i++){
+            localVerts[i] = MMath.toVector3(MMath.multiply(this.localMatrix, this.mesh.rawVerts[i].toMatrix4()))
+        }
+        return localVerts
+
+    }
+}
+
+export class Camera extends Object3D{
+
 }
 
 export class Mesh {
