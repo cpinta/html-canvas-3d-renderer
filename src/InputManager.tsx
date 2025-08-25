@@ -2,6 +2,7 @@ import { Vector2 } from "./2D"
 
 export class InputManager {
     keys: Set<string> = new Set()
+    key2eventMap: Map<string, string> = new Map<string, string>()
     mouseButtons: Set<number> = new Set()
     mouseX: number = 0
     mouseY: number = 0
@@ -16,9 +17,13 @@ export class InputManager {
     keyMoveBack: string = "KeyS"
     keyMoveLeft: string = "KeyA"
     keyMoveRight: string = "KeyD"
+
     keyEscape: string = "Escape"
 
-    eventLockMouse = new Event('lockMouse')
+    keyOpenFilePicker: string = "KeyF"
+
+    streventLockMouse = 'lockMouse'
+    streventOpenFilePicker = 'openFilePicker'
 
     // switch (e.code){
     //         case 'KeyF':
@@ -66,7 +71,7 @@ export class InputManager {
         window.addEventListener('mousedown', (e) => {
             this.mouseButtons.add(e.button)
             if(!document.pointerLockElement){
-                // this.eventLockMouse.
+                document.dispatchEvent(new Event('lockMouse'))
             }
         })
 
@@ -80,8 +85,6 @@ export class InputManager {
             this.mouseX = e.clientX
             this.mouseY = e.clientY
 
-            console.log('moved mouse: '+ this.mouseDX + ', '+this.mouseDY)
-
             this.mouseDiffVector.x += this.mouseDX
             this.mouseDiffVector.y += this.mouseDY
         })
@@ -89,18 +92,24 @@ export class InputManager {
         window.addEventListener('wheel', (e) => {
             this.mouseWheelDelta = e.deltaY
         })
+
+        this.key2eventMap.set(this.keyOpenFilePicker, 'openFilePicker')
     }
 
     addKey(code: string){
         this.keys.add(code)
-        if(code == this.keyMoveForward || code == this.keyMoveBack || code == this.keyMoveLeft || code == this.keyMoveRight){
+        if(code === this.keyMoveForward || code === this.keyMoveBack || code === this.keyMoveLeft || code === this.keyMoveRight){
             this.updateMoveInput(code)
         }
-
+        else{
+            if(this.key2eventMap.has(code)){
+                document.dispatchEvent(new Event(this.key2eventMap.get(code)!))
+            }
+        }
     }
     removeKey(code: string){
         this.keys.delete(code)
-        if(code == this.keyMoveForward || code == this.keyMoveBack || code == this.keyMoveLeft || code == this.keyMoveRight){
+        if(code === this.keyMoveForward || code === this.keyMoveBack || code === this.keyMoveLeft || code === this.keyMoveRight){
             this.updateMoveInput(code)
         }
         // else if(code == this.keyEscape){
@@ -171,12 +180,6 @@ export class InputManager {
                     this.moveVector.y = -curNum
                 }
             }
-        }
-    }
-
-    tick(){
-        for (let key of Array.from(this.keys)) {
-
         }
     }
 

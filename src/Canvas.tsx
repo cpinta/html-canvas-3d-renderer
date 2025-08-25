@@ -100,6 +100,28 @@ const Canvas = (props : CanvasProps) => {
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     }
 
+    document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('lockMouse', (e) =>{
+            if(!canvasRef.current){ return; }
+
+            const canvas: HTMLCanvasElement = canvasRef.current
+            const context: CanvasRenderingContext2D | null = canvas.getContext('2d')
+
+            if(!context){ return; }
+
+            canvas.requestPointerLock()
+
+        });
+
+        document.addEventListener('openFilePicker', (e) =>{
+            if(!fileRef.current){
+                return
+            }
+            let file : HTMLInputElement = fileRef.current
+            file.click()
+        });
+    });
+
     function openFilePicker(){
         if(!fileRef.current){return}
         let fileElement : HTMLInputElement = fileRef.current
