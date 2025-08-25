@@ -104,6 +104,7 @@ export class Renderer{
             let verts = obj.getWorldVerts()
             for(let i=0;i<verts.length;i++){
                 verts[i] = MMath.toVector3(MMath.multiply(inv(this.camera.worldMatrix), verts[i].toMatrix4()))
+                verts[i] = MMath.toVector3(MMath.multiply(this.camera.localMatrix, verts[i].toMatrix4()))
             }
 
             for(let i=0;i<verts.length;i++){
