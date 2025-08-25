@@ -140,4 +140,11 @@ export class Vector3 {
     toMatrix4(): number[][]{
         return [[this.x],[this.y],[this.z],[1]]
     }
+
+    multiply(num: number){
+        this.x *= num
+        this.y *= num
+        this.z *= num
+        return this
+    }
 }

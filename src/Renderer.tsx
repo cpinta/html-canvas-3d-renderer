@@ -4,12 +4,18 @@ import { Color, Vector2 } from "./2D"
 import { identityMatrix4, MMath } from "./Matrix"
 import { inv } from "mathjs"
 
+export type RendererProps = {
+    canvas: HTMLCanvasElement, 
+    ctx: CanvasRenderingContext2D, 
+    scaleMultiplier: number, 
+    deltaTime: number, 
+    frameCount: number
+}
 
 export class Renderer{
     
     camera: Camera = new Camera()
     objects: Object3D[] = []
-    camLoc: Vector3 = new Vector3(0, 0, -3)
     fov: number = 90;
 
     nearPlane: number = 1
@@ -48,14 +54,14 @@ export class Renderer{
         }
     }
     
-    draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number, deltaTime: number, frameCount: number){
+    draw(props: RendererProps){
         // this.objects[0].lRotate(new Vector3(0, 1 * deltaTime, 0))
         // this.objects[0].lMovePosition(new Vector3(1 * deltaTime, 0 ,0))
         // this.objects[0].wRotate(new Vector3(0, 1 * deltaTime, 0))
         // this.objects[0].wMovePosition(new Vector3(0, 0, 1* deltaTime))
         // this.objects[0].wPosition(new Vector3(0, 0, 1 * deltaTime))
         // this.camera.wRotate(new Vector3(0, 2 *deltaTime, 0))
-        this.drawMeshes(canvas, ctx, scaleMultiplier)
+        this.drawMeshes(props.canvas, props.ctx, props.scaleMultiplier)
 
         let mat: number[][] = [
             [6,1,1],
@@ -73,8 +79,8 @@ export class Renderer{
             4,-2,5,
             2,8,7
         ]
-        this.displayMatrix(ctx, mat4, new Vector2(40, 20))
-        ctx.fillText(MMath.det(mat4).toString(), 200, 20)
+        this.displayMatrix(props.ctx, mat4, new Vector2(40, 20))
+        props.ctx.fillText(MMath.det(mat4).toString(), 200, 20)
         // this.displayMatrix(ctx, this.objects[0].worldMatrix, new Vector2(200, 20))
         // this.displayMatrix(ctx, MMath.getTransformMatrix(this.objects[0].localMatrix), new Vector2(200, 20))
     }
