@@ -5,22 +5,38 @@ import { identityMatrix3, identityMatrix4, MMath } from "./Matrix"
 export class Transform3D{
     localMatrix: number[][] = structuredClone(identityMatrix4)
     worldMatrix: number[][] = structuredClone(identityMatrix4)
+
+    getWPosition(){
+        return new Vector3(this.worldMatrix[0][3], this.worldMatrix[1][3], this.worldMatrix[2][3]);
+    }
     
     wRotate(rotation: Vector3){
         this.worldMatrix = MMath.rotate(this.worldMatrix, rotation)
     }
 
+    wSetPosition(position: Vector3){
+        this.worldMatrix = MMath.setPosition(this.worldMatrix, position)
+    }
+
+    wMovePosition(position: Vector3){
+        this.worldMatrix = MMath.move(this.worldMatrix, position)
+    }
+    
     lRotate(rotation: Vector3){
         this.localMatrix = MMath.rotate(this.localMatrix, rotation)
     }
 
-    wPosition(position: Vector3){
-        this.worldMatrix = MMath.move(this.worldMatrix, position)
+    lSetPosition(position: Vector3){
+        this.localMatrix = MMath.setPosition(this.localMatrix, position)
     }
 
-    lPosition(position: Vector3){
+    lMovePosition(position: Vector3){
         this.localMatrix = MMath.move(this.localMatrix, position)
     }
+}
+
+export class Camera extends Transform3D{
+
 }
 
 export class Object3D extends Transform3D{
@@ -49,10 +65,6 @@ export class Object3D extends Transform3D{
         return localVerts
 
     }
-}
-
-export class Camera extends Object3D{
-
 }
 
 export class Mesh {

@@ -1,6 +1,7 @@
 import { KeyboardEvent, useEffect, useRef } from 'react';
 import { Renderer } from './Renderer';
 import FileImport3D from './FileImport3D';
+import { Vector3 } from './3D';
 
 interface CanvasProps {}
 
@@ -64,7 +65,8 @@ const Canvas = (props : CanvasProps) => {
                 if(frameCount % updateFPSevery == 0){
                     fps.current = Math.trunc(1/deltaTime)
                 }
-                    context.fillText(fps.current.toString(), 20, 100)
+                // context.font
+                context.fillText(fps.current.toString(), 20, 100)
             }
             animationFrameId = window.requestAnimationFrame(() => {
                 render();
@@ -91,14 +93,41 @@ const Canvas = (props : CanvasProps) => {
     }
 
     function handleKeyDown(e: KeyboardEvent) {
-        if(e.code == 'KeyF'){
-            if(!fileRef.current){
-                return
-            }
-            let file : HTMLInputElement = fileRef.current
-            file.click()
+        switch (e.code){
+            case 'KeyF':
+                if(!fileRef.current){
+                    return
+                }
+                let file : HTMLInputElement = fileRef.current
+                file.click()
+                break
+            case 'Space':
+                renderer.current.camera.wMovePosition(new Vector3(0, 1, 0))
+                break
+            case 'ShiftLeft':
+                renderer.current.camera.wMovePosition(new Vector3(0, -1, 0))
+                break
+            case 'KeyW':
+                renderer.current.camera.wMovePosition(new Vector3(0, 0, 0.5))
+                break
+            case 'KeyS':
+                renderer.current.camera.wMovePosition(new Vector3(0, 0, -0.5))
+                break
+            case 'KeyA':
+                renderer.current.camera.wMovePosition(new Vector3(-1, 0, 0))
+                break
+            case 'KeyD':
+                renderer.current.camera.wMovePosition(new Vector3(1, 0, 0))
+                break
+            case 'ArrowLeft':
+                renderer.current.camera.wRotate(new Vector3(0, -0.03, 0))
+                break
+            case 'ArrowRight':
+                renderer.current.camera.wRotate(new Vector3(0, 0.03, 0))
+                break
         }
         console.log(e.code)
+
     }
     function handleKeyUp(e: KeyboardEvent) {
     }
@@ -138,7 +167,7 @@ const Canvas = (props : CanvasProps) => {
     return(
         <>
             <canvas ref={canvasRef} {...props} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} style={{width:100+`%`, height:'0%', imageRendering: 'pixelated'}} />
-            <input ref={fileRef} type='file' onChange={openFilePicker} />
+            <input ref={fileRef} type='file' onChange={openFilePicker} style={{display:'none'}} />
         </>
     );
 }

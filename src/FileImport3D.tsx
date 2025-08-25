@@ -14,15 +14,12 @@ class FileImport3D{
                     objName = args[1]
                     break
                 case "v":
-                    verts.push(new Vector3(Number.parseFloat(args[1]), -Number.parseFloat(args[2]), Number.parseFloat(args[3])))
+                    verts.push(new Vector3(Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
                     break
                 case "f":
                     let face: number[] = []
                     for(let j=1;j<args.length;j++){
                         let vertInds: string[] = args[j].split("/")
-                        if(j==1 && vertInds[0]=="16"){
-                            let temp = 0
-                        }
                         face.push(Number.parseInt(vertInds[0]) - 1)
                     }
                     faces.push(face)
