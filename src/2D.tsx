@@ -6,6 +6,17 @@ export class Vector2 {
         this.x = x
         this.y = y
     }
+
+    multiply(num: number){
+        this.x *= num
+        this.y *= num
+        return this
+    }
+    
+    zero(){
+        this.x = 0
+        this.y = 0
+    }
 }
 
 export class Color {

@@ -10,6 +10,8 @@ export class InputManager {
     mouseWheelDelta: number = 0
 
     moveVector: Vector2 = new Vector2()
+    mouseDiffVector: Vector2 = new Vector2()
+
     keyMoveForward: string = "KeyW"
     keyMoveBack: string = "KeyS"
     keyMoveLeft: string = "KeyA"
@@ -77,6 +79,11 @@ export class InputManager {
             this.mouseDY = e.movementY
             this.mouseX = e.clientX
             this.mouseY = e.clientY
+
+            console.log('moved mouse: '+ this.mouseDX + ', '+this.mouseDY)
+
+            this.mouseDiffVector.x += this.mouseDX
+            this.mouseDiffVector.y += this.mouseDY
         })
 
         window.addEventListener('wheel', (e) => {
@@ -103,6 +110,12 @@ export class InputManager {
 
     isKeyPressed(code: string){
         return this.keys.has(code)
+    }
+
+    getMouseVector(){
+        let vector = structuredClone(this.mouseDiffVector)
+        this.mouseDiffVector.zero()
+        return vector
     }
 
     updateMoveInput(input: string){

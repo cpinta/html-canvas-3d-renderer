@@ -3,6 +3,7 @@ import { Renderer, RendererProps } from './Renderer';
 import FileImport3D from './FileImport3D';
 import { InputManager } from './InputManager';
 import { Vector3 } from './3D';
+import { Vector2 } from './2D';
 
 interface CanvasProps {}
 
@@ -42,7 +43,6 @@ const Canvas = (props : CanvasProps) => {
         let updateFPSevery: number = 20
 
         let displayScale = 2
-        let velocity = 10
         canvas.width = 512 * displayScale
         canvas.height = 288 * displayScale
 
@@ -52,6 +52,11 @@ const Canvas = (props : CanvasProps) => {
         context.strokeStyle = '#FF0000'
 
         rendererProps.current = {canvas:canvas, ctx: context, scaleMultiplier: displayScale, deltaTime: 0, frameCount: frameCount}
+
+
+        let moveVelocity = 10
+        let mouseSensitivity = 0.005
+
 
         //Our draw came here
         const render = () => {
@@ -63,7 +68,11 @@ const Canvas = (props : CanvasProps) => {
                 timeSinceStart.current += deltaTime;
 
                 clearCanvas(context)
-                renderer.current.camera.wMovePosition(new Vector3(input.current.moveVector.x, 0, input.current.moveVector.y).multiply(deltaTime * velocity))
+                renderer.current.camera.wMovePosition(new Vector3(input.current.moveVector.x, 0, input.current.moveVector.y).multiply(deltaTime * moveVelocity))
+                let mouseVec: Vector2 = input.current.getMouseVector()
+                mouseVec.x *= mouseSensitivity
+                mouseVec.y *= mouseSensitivity
+                renderer.current.camera.wRotate(new Vector3(mouseVec.y, mouseVec.x, 0))
                 renderer.current.draw(rendererProps.current)
 
                 if(frameCount % updateFPSevery == 0){
