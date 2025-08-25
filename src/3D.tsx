@@ -77,13 +77,16 @@ export class Mesh {
     constructor(verts : Vector3[], faces:number[][]){
         this.rawVerts = verts
         for(let i=0;i<faces.length;i++){
-            this.createFace(faces[i])
+            this.createFaceFromVertInds(faces[i])
         }
     }
 
-    createFace(vertIndexes:number[]){
+    createFaceFromVertInds(vertIndexes:number[]){
         let face: Face = new Face(vertIndexes)
+        this.addFace(face)
+    }
 
+    addFace(face: Face){
         this.faceArr.push(face)
         if(this.vert2faceMap.has(face.largestVertIndex)){
             this.vert2faceMap.get(face.largestVertIndex)?.push(this.faceArr.length - 1)
@@ -97,8 +100,9 @@ export class Mesh {
 export class Face {
     vertIndexes: number[]
     largestVertIndex: number = -1
+    normal: Vector3
 
-    constructor(vertIndexes: number[]){
+    constructor(vertIndexes: number[], normal: Vector3 = Vector3.one()){
         if(vertIndexes.length < 3){
             throw new Error("Invalid face")
         }
@@ -108,8 +112,10 @@ export class Face {
                 this.largestVertIndex = vertIndexes[i]
             }
         }
+        this.normal = normal
     }
 }
+
 export class Vector3 {
     x: number;
     y: number;
@@ -119,6 +125,13 @@ export class Vector3 {
         this.x = x
         this.y = y
         this.z = z
+    }
+
+    static zero(){
+        return new Vector3(0, 0, 0)
+    }
+    static one(){
+        return new Vector3(1, 1, 1)
     }
 
     translate(x:number, y:number, z:number){
