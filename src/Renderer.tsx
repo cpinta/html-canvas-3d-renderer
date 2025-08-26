@@ -79,7 +79,9 @@ export class Renderer{
             4,-2,5,
             2,8,7
         ]
-        this.displayMatrix(props.ctx, mat4, new Vector2(40, 20))
+
+        //MMath.multiply(this.camera.localMatrix, this.camera.worldMatrix)
+        this.displayMatrix(props.ctx, this.camera.localMatrix, new Vector2(40, 20))
         props.ctx.fillText(MMath.det(mat4).toString(), 200, 20)
         // this.displayMatrix(ctx, this.objects[0].worldMatrix, new Vector2(200, 20))
         // this.displayMatrix(ctx, MMath.getTransformMatrix(this.objects[0].localMatrix), new Vector2(200, 20))

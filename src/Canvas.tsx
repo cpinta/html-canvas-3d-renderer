@@ -55,7 +55,7 @@ const Canvas = (props : CanvasProps) => {
 
 
         let moveVelocity = 10
-        let mouseSensitivity = 0.005
+        let mouseSensitivity = 0.0025
 
 
         //Our draw came here

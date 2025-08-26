@@ -74,12 +74,13 @@ export class Mesh {
     vert2faceMap: Map<number, number[]> = new Map()
     faceArr: Face[] = new Array()
 
-    constructor(verts : Vector3[], faces:number[][]){
+    constructor(verts : Vector3[], faces:Face[]){
         this.rawVerts = verts
         for(let i=0;i<faces.length;i++){
-            this.createFaceFromVertInds(faces[i])
+            this.addFace(faces[i])
         }
     }
+
 
     createFaceFromVertInds(vertIndexes:number[]){
         let face: Face = new Face(vertIndexes)

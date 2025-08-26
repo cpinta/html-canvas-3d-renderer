@@ -39,7 +39,7 @@ class FileImport3D{
             }
         }
 
-        let mesh = new Mesh(verts, faces)
+        let mesh = new Mesh(verts, facesObjs)
         let obj = new Object3D(mesh, objName)
         return obj
     }
