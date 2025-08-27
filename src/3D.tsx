@@ -63,10 +63,6 @@ export class Transform3D{
     getFwdVector(){
         if(!this.isCombined){
             this.combineMatrix()
-            console.log("combined")
-        }
-        else{
-            console.log("not combined")
         }
         return new Vector3(this.combinedMatrix[0][2], this.combinedMatrix[1][2], this.combinedMatrix[2][2])
     }
@@ -132,6 +128,7 @@ export class Mesh {
     }
 
     addFace(face: Face){
+        face.mesh = this
         this.faceArr.push(face)
         if(this.vert2faceMap.has(face.largestVertIndex)){
             this.vert2faceMap.get(face.largestVertIndex)?.push(this.faceArr.length - 1)
@@ -140,18 +137,23 @@ export class Mesh {
             this.vert2faceMap.set(face.largestVertIndex, [this.faceArr.length - 1])
         }
     }
+
+    static empty(){
+        return new Mesh([],[])
+    }
 }
 
 export class Face {
+    mesh: Mesh = Mesh.empty()
     vertIndexes: number[]
     largestVertIndex: number = -1
     normal: Vector3
     color: Color
 
     constructor(vertIndexes: number[], color: Color = Color.hotPink, normal: Vector3 = Vector3.one()){
-        if(vertIndexes.length < 3){
-            throw new Error("Invalid face")
-        }
+        // if(vertIndexes.length < 3){
+        //     throw new Error("Invalid face")
+        // }
         this.vertIndexes = vertIndexes
         for(let i=0;i<vertIndexes.length;i++){
             if(vertIndexes[i] > this.largestVertIndex){
@@ -160,6 +162,10 @@ export class Face {
         }
         this.normal = normal
         this.color = color
+    }
+
+    setMesh(mesh:Mesh){
+        this.mesh = mesh 
     }
 }
 
@@ -209,5 +215,17 @@ export class Vector3 {
         this.y *= num
         this.z *= num
         return this
+    }
+
+    angleWith(vector: Vector3){
+        return Math.acos(this.dotWith(vector) / (this.magnitude() * vector.magnitude()))
+    }
+
+    dotWith(vector: Vector3){
+        return this.x * vector.x + this.y * vector.y + this.z * vector.z 
+    }
+
+    magnitude(){
+        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2))
     }
 }
