@@ -13,9 +13,15 @@ export class Vector2 {
         return this
     }
     
-    zero(){
+    setZero(){
         this.x = 0
         this.y = 0
+    }
+    isZero(){
+        return this.x == 0 && this.y == 0
+    }
+    static zero(){
+        return new Vector2(0, 0)
     }
 }
 
