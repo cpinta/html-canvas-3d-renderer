@@ -25,26 +25,19 @@ export class Renderer{
     colors: Color[] = []
 
     constructor(){
-        this.colors = [
-            
-            Color.fromHex('#0000FF'),
-            Color.fromHex('#00AAEE'),
-            Color.fromHex('#EEAA00'),
-            Color.fromHex('#AAEEFF'),
-            Color.fromHex('#FF00AA'),
-            Color.fromHex('#AAAAFF'),
-            Color.fromHex('#00FFAA')
-        ]
 
 
         
-        let cube: Cube = new Cube(new Vector3(0, 0, 3), 2)
-        let cube2: Cube = new Cube(new Vector3(3, 0, 0), 2)
+        let cube: Cube = new Cube(new Vector3(0, 0, 5), 2, Color.lightGreen)
+        let cube2: Cube = new Cube(new Vector3(6, 0, 0), 3, Color.hotPink)
+        let cube3: Cube = new Cube(new Vector3(0, 6, 0), 3, Color.hotPink)
         this.camera.wMovePosition(new Vector3(0, 0, 0))
         let obj: Object3D = new Object3D(cube)
         let obj2: Object3D = new Object3D(cube2)
+        let obj3: Object3D = new Object3D(cube3)
         this.objects.push(obj)
         this.objects.push(obj2)
+        this.objects.push(obj3)
         
         
     }
@@ -85,7 +78,9 @@ export class Renderer{
 
         //MMath.multiply(this.camera.localMatrix, this.camera.worldMatrix)
         this.displayMatrix(props.ctx, this.camera.localMatrix, new Vector2(40, 20))
-        props.ctx.fillText(MMath.det(mat4).toString(), 200, 20)
+        this.displayMatrix(props.ctx, this.camera.worldMatrix, new Vector2(200, 20))
+        this.displayMatrix(props.ctx, MMath.multiply(this.camera.worldMatrix, this.camera.localMatrix), new Vector2(360, 20))
+        // props.ctx.fillText(MMath.det(mat4).toString(), 200, 20)
         // this.displayMatrix(ctx, this.objects[0].worldMatrix, new Vector2(200, 20))
         // this.displayMatrix(ctx, MMath.getTransformMatrix(this.objects[0].localMatrix), new Vector2(200, 20))
     }
@@ -99,7 +94,7 @@ export class Renderer{
     drawMeshes(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, scaleMultiplier: number){
         let linesDrawn = 0
         let facesDrawn = 0
-        let screenSpaceFaces: FaceDepthColor[] = []
+        let screenSpaceFaces: FaceDepthStart[] = []
 
         let worldScreenSpaceVerts: Vector3[] = [] 
         
@@ -153,7 +148,7 @@ export class Renderer{
                         }
                         let color = this.colors[facesDrawn % this.colors.length]
 
-                        screenSpaceFaces.push(new FaceDepthColor(face, color, worldScreenSpaceVerts.length))
+                        screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length))
                         // let octx: OffscreenCanvasRenderingContext2D = offScreens[offScreens.length-1].osc.getContext("2d") as OffscreenCanvasRenderingContext2D
 
                         let averageDepth: number = 0
@@ -203,7 +198,7 @@ export class Renderer{
 
     }
 
-    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthColor){
+    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart){
         ctx.beginPath()
         let face: Face = fdc.face
 
@@ -212,20 +207,16 @@ export class Renderer{
         }
         ctx.lineTo(screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].x, screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].y)
 
-        let newColor: Color = new Color(fdc.color.r, fdc.color.g, fdc.color.b, fdc.color.a)
+        let newColor: Color = new Color(face.color.r, face.color.g, face.color.b, face.color.a)
 
         let newZ: number = ((this.farPlane)/(this.farPlane - this.nearPlane)) + 1/fdc.depth *((-this.farPlane * this.nearPlane)/(this.farPlane - this.nearPlane))
 
-        newColor.r = fdc.color.r -(fdc.color.r * newZ);
-        newColor.g = fdc.color.g -(fdc.color.g * newZ);
-        newColor.b = fdc.color.b -(fdc.color.b * newZ);
-
-        // octx.fillStyle = 'white'
-        // octx.fillText(newZ.toString(), screenSpaceVerts[face.vertIndexes[1]].x, screenSpaceVerts[face.vertIndexes[1]].y)
+        newColor.r = face.color.r -(face.color.r * newZ);
+        newColor.g = face.color.g -(face.color.g * newZ);
+        newColor.b = face.color.b -(face.color.b * newZ);
 
         ctx.fillStyle = newColor.rgbaString()
         ctx.strokeStyle = newColor.rgbaString()
-
 
         ctx.closePath()
         ctx.stroke()
@@ -233,15 +224,13 @@ export class Renderer{
     }
 }
 
-export class FaceDepthColor {
-    vertStartIndex: number = 0
-    depth: number = -1
+export class FaceDepthStart {
     face: Face
-    color: Color
+    depth: number = -1
+    vertStartIndex: number = 0
 
-    constructor(face: Face, color: Color, vertStartIndex: number){
+    constructor(face: Face, vertStartIndex: number){
         this.face = face
-        this.color = color
         this.vertStartIndex = vertStartIndex
     }
 }

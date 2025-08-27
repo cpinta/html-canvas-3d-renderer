@@ -1,7 +1,8 @@
+import { Color } from "./2D"
 import { Face, Mesh, Object3D, Vector3 } from "./3D"
 
 class FileImport3D{
-    static OBJ_Import(fileContent: string){
+    static OBJ_Import(fileContent: string, color: Color){
         let objName: string = ""
         let verts: Vector3[] = []
         let faces: number[][] = []
@@ -30,7 +31,7 @@ class FileImport3D{
                         vn.push(Number.parseInt(vertInds[2]) - 1)
                     }
                     faces.push(face)
-                    facesObjs.push(new Face(face, new Vector3(vn[0], vn[1], vn[2])))
+                    facesObjs.push(new Face(face, color, new Vector3(vn[0], vn[1], vn[2])))
                     break
                 case "#":
                     break

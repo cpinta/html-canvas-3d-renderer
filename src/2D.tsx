@@ -83,5 +83,22 @@ export class Color {
             return new Color(-1, -1, -1, -1)
         }
     }
+
+    static darkBlue = Color.fromHex('#0000FF')
+    static lightBlue = Color.fromHex('#00AAEE')
+    static orangeJuiceOrange = Color.fromHex('#EEAA00')
+    static skyLightBlue = Color.fromHex('#AAEEFF')
+    static hotPink = Color.fromHex('#FF00AA')
+    static lightPurple = Color.fromHex('#AAAAFF')
+    static lightGreen = Color.fromHex('#00FFAA')
     
+    static exampleArray7 = [
+        this.darkBlue,
+        this.lightBlue,
+        this.orangeJuiceOrange,
+        this.skyLightBlue,
+        this.hotPink,
+        this.lightPurple,
+        this.lightGreen
+    ]
 }

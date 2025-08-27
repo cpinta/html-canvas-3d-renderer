@@ -1,4 +1,5 @@
 
+import { Color } from "./2D";
 import { identityMatrix3, identityMatrix4, MMath } from "./Matrix"
 
 
@@ -32,6 +33,11 @@ export class Transform3D{
 
     lMovePosition(position: Vector3){
         this.localMatrix = MMath.move(this.localMatrix, position)
+    }
+
+    getFwdVector(){
+        let mat: number[][] = MMath.multiply(this.worldMatrix, this.localMatrix)
+        return new Vector3(mat[0][2], mat[1][2], mat[2][2])
     }
 }
 
@@ -102,8 +108,9 @@ export class Face {
     vertIndexes: number[]
     largestVertIndex: number = -1
     normal: Vector3
+    color: Color
 
-    constructor(vertIndexes: number[], normal: Vector3 = Vector3.one()){
+    constructor(vertIndexes: number[], color: Color = Color.hotPink, normal: Vector3 = Vector3.one()){
         if(vertIndexes.length < 3){
             throw new Error("Invalid face")
         }
@@ -114,6 +121,7 @@ export class Face {
             }
         }
         this.normal = normal
+        this.color = color
     }
 }
 

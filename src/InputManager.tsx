@@ -10,6 +10,8 @@ export class InputManager {
     mouseDY: number = 0
     mouseWheelDelta: number = 0
 
+    MOUSE_KEY_SPEED: number = 100
+
     moveVector: Vector2 = new Vector2()
     mouseDiffVector: Vector2 = new Vector2()
 
@@ -18,12 +20,18 @@ export class InputManager {
     keyMoveLeft: string = "KeyA"
     keyMoveRight: string = "KeyD"
 
+    keyLookForward: string = "ArrowUp"
+    keyLookBack: string = "ArrowDown"
+    keyLookLeft: string = "ArrowLeft"
+    keyLookRight: string = "ArrowRight"
+
     keyEscape: string = "Escape"
 
     keyOpenFilePicker: string = "KeyF"
 
-    streventLockMouse = 'lockMouse'
-    streventOpenFilePicker = 'openFilePicker'
+    static strELockMouse = 'lockMouse'
+    static strEOpenFilePicker = 'openFilePicker'
+    static strEMoveMouseKeysPressed = 'moveMouseKeysPressed'
 
     // switch (e.code){
     //         case 'KeyF':
@@ -61,6 +69,7 @@ export class InputManager {
 
     constructor(){
         window.addEventListener('keydown', (e) => {
+            console.log(e.code)
             this.addKey(e.code)
         })
 
@@ -106,11 +115,18 @@ export class InputManager {
                 document.dispatchEvent(new Event(this.key2eventMap.get(code)!))
             }
         }
+        if(code === this.keyLookForward || code === this.keyLookBack || code === this.keyLookLeft || code === this.keyLookRight){
+            this.updateMouseKeyInput(code)
+        }
     }
     removeKey(code: string){
         this.keys.delete(code)
         if(code === this.keyMoveForward || code === this.keyMoveBack || code === this.keyMoveLeft || code === this.keyMoveRight){
             this.updateMoveInput(code)
+        }
+        
+        if(code === this.keyLookForward || code === this.keyLookBack || code === this.keyLookLeft || code === this.keyLookRight){
+            this.updateMouseKeyInput(code)
         }
         // else if(code == this.keyEscape){
         //     document.
@@ -134,50 +150,73 @@ export class InputManager {
         }
         switch(input){
             case this.keyMoveForward:
-                this.moveVectorOpposingKeys(this.keyMoveBack, 1, isPressed, false)
+                this.moveVectorOpposingKeys(this.keyMoveBack, 1, isPressed, false, this.moveVector)
                 break
             case this.keyMoveBack:
-                this.moveVectorOpposingKeys(this.keyMoveForward, -1, isPressed, false)
+                this.moveVectorOpposingKeys(this.keyMoveForward, -1, isPressed, false, this.moveVector)
                 break
             case this.keyMoveLeft:
-                this.moveVectorOpposingKeys(this.keyMoveRight, -1, isPressed, true)
+                this.moveVectorOpposingKeys(this.keyMoveRight, -1, isPressed, true, this.moveVector)
                 break
             case this.keyMoveRight:
-                this.moveVectorOpposingKeys(this.keyMoveLeft, 1, isPressed, true)
+                this.moveVectorOpposingKeys(this.keyMoveLeft, 1, isPressed, true, this.moveVector)
                 break
         }
     }
 
-    moveVectorOpposingKeys(oppKey: string, curNum: number, isPressed: boolean, isX: boolean){
+    updateMouseKeyInput(input: string){
+        let isPressed: boolean = false
+        if(this.keys.has(input)){
+            isPressed = true
+        }
+        switch(input){
+            case this.keyLookForward:
+                this.moveVectorOpposingKeys(this.keyLookBack, 1, isPressed, false, this.mouseDiffVector)
+                break
+            case this.keyLookBack:
+                this.moveVectorOpposingKeys(this.keyLookForward, -1, isPressed, false, this.mouseDiffVector)
+                break
+            case this.keyLookLeft:
+                this.moveVectorOpposingKeys(this.keyLookRight, -1, isPressed, true, this.mouseDiffVector)
+                break
+            case this.keyLookRight:
+                this.moveVectorOpposingKeys(this.keyLookLeft, 1, isPressed, true, this.mouseDiffVector)
+                break
+        }
+        this.mouseDiffVector.multiply(this.MOUSE_KEY_SPEED)
+        document.dispatchEvent(new Event(InputManager.strEMoveMouseKeysPressed))
+    }
+
+    moveVectorOpposingKeys(oppKey: string, curNum: number, isPressed: boolean, isX: boolean, curVector: Vector2){
         if(isPressed){
             if(isX){
-                this.moveVector.x = curNum
+                curVector.x = curNum
             }
             else{
-                this.moveVector.y = curNum
+                curVector.y = curNum
             }
             if(this.isKeyPressed(oppKey)){
                 if(isX){
-                    this.moveVector.x = 0
+                    curVector.x = 0
                 }
                 else{
-                    this.moveVector.y = 0
+                    curVector.y = 0
                 }
             }
         }
         else{
             if(isX){
-                this.moveVector.x = 0
+                curVector.x = 0
             }
             else{
-                this.moveVector.y = 0
+                curVector.y = 0
             }
             if(this.isKeyPressed(oppKey)){
                 if(isX){
-                    this.moveVector.x = -curNum
+                    curVector.x = -curNum
                 }
                 else{
-                    this.moveVector.y = -curNum
+                    curVector.y = -curNum
                 }
             }
         }

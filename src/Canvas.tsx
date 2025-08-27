@@ -3,7 +3,7 @@ import { Renderer, RendererProps } from './Renderer';
 import FileImport3D from './FileImport3D';
 import { InputManager } from './InputManager';
 import { Vector3 } from './3D';
-import { Vector2 } from './2D';
+import { Color, Vector2 } from './2D';
 
 interface CanvasProps {}
 
@@ -101,7 +101,7 @@ const Canvas = (props : CanvasProps) => {
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        document.addEventListener('lockMouse', (e) =>{
+        document.addEventListener(InputManager.strELockMouse, (e) =>{
             if(!canvasRef.current){ return; }
 
             const canvas: HTMLCanvasElement = canvasRef.current
@@ -113,7 +113,7 @@ const Canvas = (props : CanvasProps) => {
 
         });
 
-        document.addEventListener('openFilePicker', (e) =>{
+        document.addEventListener(InputManager.strEOpenFilePicker, (e) =>{
             if(!fileRef.current){
                 return
             }
@@ -150,7 +150,7 @@ const Canvas = (props : CanvasProps) => {
                 return
             }
             
-            renderer.current.setObj(FileImport3D.OBJ_Import(content))
+            renderer.current.setObj(FileImport3D.OBJ_Import(content, Color.orangeJuiceOrange))
         }
     }
 
