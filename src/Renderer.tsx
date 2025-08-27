@@ -25,13 +25,9 @@ export class Renderer{
     colors: Color[] = []
 
     constructor(){
-
-
-        
         let cube: Cube = new Cube(new Vector3(0, 0, 5), 2, Color.lightGreen)
         let cube2: Cube = new Cube(new Vector3(6, 0, 0), 3, Color.hotPink)
         let cube3: Cube = new Cube(new Vector3(0, 6, 0), 3, Color.hotPink)
-        this.camera.wMovePosition(new Vector3(0, 0, 0))
         let obj: Object3D = new Object3D(cube)
         let obj2: Object3D = new Object3D(cube2)
         let obj3: Object3D = new Object3D(cube3)
@@ -39,7 +35,7 @@ export class Renderer{
         this.objects.push(obj2)
         this.objects.push(obj3)
         
-        
+        this.camera.wMovePosition(new Vector3(0, 0, 0))
     }
 
     displayMatrix(ctx: CanvasRenderingContext2D, mat:number[][], offset: Vector2){
@@ -79,7 +75,8 @@ export class Renderer{
         //MMath.multiply(this.camera.localMatrix, this.camera.worldMatrix)
         this.displayMatrix(props.ctx, this.camera.localMatrix, new Vector2(40, 20))
         this.displayMatrix(props.ctx, this.camera.worldMatrix, new Vector2(200, 20))
-        this.displayMatrix(props.ctx, MMath.multiply(this.camera.worldMatrix, this.camera.localMatrix), new Vector2(360, 20))
+        this.displayMatrix(props.ctx, this.camera.combinedMatrix, new Vector2(360, 20))
+        this.displayMatrix(props.ctx, this.camera.getFwdVector().toMatrix3(), new Vector2(580, 20))
         // props.ctx.fillText(MMath.det(mat4).toString(), 200, 20)
         // this.displayMatrix(ctx, this.objects[0].worldMatrix, new Vector2(200, 20))
         // this.displayMatrix(ctx, MMath.getTransformMatrix(this.objects[0].localMatrix), new Vector2(200, 20))

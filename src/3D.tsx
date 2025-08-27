@@ -6,38 +6,73 @@ import { identityMatrix3, identityMatrix4, MMath } from "./Matrix"
 export class Transform3D{
     localMatrix: number[][] = structuredClone(identityMatrix4)
     worldMatrix: number[][] = structuredClone(identityMatrix4)
+    combinedMatrix: number[][] = structuredClone(identityMatrix4)
+    isCombined: boolean = true
 
     getWPosition(){
         return new Vector3(this.worldMatrix[0][3], this.worldMatrix[1][3], this.worldMatrix[2][3]);
     }
     
     wRotate(rotation: Vector3){
+        if(rotation.isZero()){
+            return
+        }
         this.worldMatrix = MMath.rotate(this.worldMatrix, rotation)
+        this.matrixChanged()
     }
 
     wSetPosition(position: Vector3){
         this.worldMatrix = MMath.setPosition(this.worldMatrix, position)
+        this.matrixChanged()
     }
 
     wMovePosition(position: Vector3){
+        if(position.isZero()){
+            return
+        }
         this.worldMatrix = MMath.move(this.worldMatrix, position)
+        this.matrixChanged()
     }
     
     lRotate(rotation: Vector3){
+        if(rotation.isZero()){
+            return
+        }
         this.localMatrix = MMath.rotate(this.localMatrix, rotation)
+        this.matrixChanged()
     }
 
     lSetPosition(position: Vector3){
         this.localMatrix = MMath.setPosition(this.localMatrix, position)
+        this.matrixChanged()
     }
 
     lMovePosition(position: Vector3){
+        if(position.isZero()){
+            return
+        }
         this.localMatrix = MMath.move(this.localMatrix, position)
+        this.matrixChanged()
+    }
+
+    combineMatrix(){
+        this.combinedMatrix = MMath.multiply(this.localMatrix, this.worldMatrix)
+        this.isCombined = true
     }
 
     getFwdVector(){
-        let mat: number[][] = MMath.multiply(this.worldMatrix, this.localMatrix)
-        return new Vector3(mat[0][2], mat[1][2], mat[2][2])
+        if(!this.isCombined){
+            this.combineMatrix()
+            console.log("combined")
+        }
+        else{
+            console.log("not combined")
+        }
+        return new Vector3(this.combinedMatrix[0][2], this.combinedMatrix[1][2], this.combinedMatrix[2][2])
+    }
+
+    matrixChanged(){
+        this.isCombined = false
     }
 }
 
@@ -56,11 +91,14 @@ export class Object3D extends Transform3D{
     }
 
     getWorldVerts(): Vector3[]{
-        let worldVerts: Vector3[] = this.getLocalVerts()
-        for(let i = 0; i < this.mesh.rawVerts.length; i++){
-            worldVerts[i] = MMath.toVector3(MMath.multiply(this.worldMatrix, worldVerts[i].toMatrix4()))
+        let verts: Vector3[] = []
+        if(!this.isCombined){
+            this.combineMatrix()
         }
-        return worldVerts
+        for(let i = 0; i < this.mesh.rawVerts.length; i++){
+            verts[i] = MMath.toVector3(MMath.multiply(this.combinedMatrix, this.mesh.rawVerts[i].toMatrix4()))
+        }
+        return verts
     }
 
     getLocalVerts(): Vector3[]{
@@ -141,6 +179,9 @@ export class Vector3 {
     }
     static one(){
         return new Vector3(1, 1, 1)
+    }
+    isZero(){
+        return this.x == 0 && this.y == 0 && this.z == 0
     }
 
     translate(x:number, y:number, z:number){

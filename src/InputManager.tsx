@@ -4,6 +4,8 @@ export class InputManager {
     keys: Set<string> = new Set()
     key2eventMap: Map<string, string> = new Map<string, string>()
     mouseButtons: Set<number> = new Set()
+
+    useMouse: boolean = false
     mouseX: number = 0
     mouseY: number = 0
     mouseDX: number = 0
@@ -81,6 +83,7 @@ export class InputManager {
             this.mouseButtons.add(e.button)
             if(!document.pointerLockElement){
                 document.dispatchEvent(new Event('lockMouse'))
+                this.useMouse = true
             }
         })
 
@@ -89,6 +92,9 @@ export class InputManager {
         })
 
         window.addEventListener('mousemove', (e) => {
+            if(!this.useMouse){
+                return;
+            }
             this.mouseDX = e.movementX
             this.mouseDY = e.movementY
             this.mouseX = e.clientX
