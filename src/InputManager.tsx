@@ -82,8 +82,8 @@ export class InputManager {
         window.addEventListener('mousedown', (e) => {
             this.mouseButtons.add(e.button)
             if(!document.pointerLockElement){
-                document.dispatchEvent(new Event('lockMouse'))
-                this.useMouse = true
+                // document.dispatchEvent(new Event('lockMouse'))
+                // this.useMouse = true
             }
         })
 
@@ -145,7 +145,7 @@ export class InputManager {
 
     getMouseVector(){
         let vector = structuredClone(this.mouseDiffVector)
-        this.mouseDiffVector.zero()
+        this.mouseDiffVector.setZero()
         return vector
     }
 
