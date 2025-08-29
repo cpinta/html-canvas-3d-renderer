@@ -180,6 +180,10 @@ export class Vector3 {
         this.z = z
     }
 
+    static fromV3(v: Vector3){
+        return new Vector3(v.x, v.y, v.z)
+    }
+
     static zero(){
         return new Vector3(0, 0, 0)
     }
@@ -217,6 +221,13 @@ export class Vector3 {
         return this
     }
 
+    divide(num:number){
+        this.x /= num
+        this.y /= num
+        this.z /= num
+        return this
+    }
+
     angleWith(vector: Vector3){
         return Math.acos(this.dotWith(vector) / (this.magnitude() * vector.magnitude()))
     }
@@ -227,5 +238,13 @@ export class Vector3 {
 
     magnitude(){
         return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2))
+    }
+
+    add(vector: Vector3){
+        let newVector = new Vector3(this.x, this.y, this.z)
+        newVector.x += vector.x
+        newVector.y += vector.y
+        newVector.z += vector.z
+        return newVector
     }
 }
