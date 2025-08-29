@@ -1,4 +1,5 @@
 import { Vector2 } from "./2D"
+import { Vector3 } from "./3D"
 
 export class InputManager {
     keys: Set<string> = new Set()
@@ -14,13 +15,15 @@ export class InputManager {
 
     MOUSE_KEY_SPEED: number = 100
 
-    moveVector: Vector2 = new Vector2()
+    moveVector: Vector3 = new Vector3()
     mouseDiffVector: Vector2 = new Vector2()
 
     keyMoveForward: string = "KeyW"
     keyMoveBack: string = "KeyS"
     keyMoveLeft: string = "KeyA"
     keyMoveRight: string = "KeyD"
+    keyMoveUp: string = "Space"
+    keyMoveDown: string = "ShiftLeft"
 
     keyLookForward: string = "ArrowUp"
     keyLookBack: string = "ArrowDown"
@@ -82,8 +85,8 @@ export class InputManager {
         window.addEventListener('mousedown', (e) => {
             this.mouseButtons.add(e.button)
             if(!document.pointerLockElement){
-                document.dispatchEvent(new Event('lockMouse'))
-                this.useMouse = true
+                // document.dispatchEvent(new Event('lockMouse'))
+                // this.useMouse = true
             }
         })
 
@@ -113,7 +116,7 @@ export class InputManager {
 
     addKey(code: string){
         this.keys.add(code)
-        if(code === this.keyMoveForward || code === this.keyMoveBack || code === this.keyMoveLeft || code === this.keyMoveRight){
+        if(code === this.keyMoveForward || code === this.keyMoveBack || code === this.keyMoveLeft || code === this.keyMoveRight || code === this.keyMoveUp || code === this.keyMoveDown){
             this.updateMoveInput(code)
         }
         else{
@@ -127,7 +130,7 @@ export class InputManager {
     }
     removeKey(code: string){
         this.keys.delete(code)
-        if(code === this.keyMoveForward || code === this.keyMoveBack || code === this.keyMoveLeft || code === this.keyMoveRight){
+        if(code === this.keyMoveForward || code === this.keyMoveBack || code === this.keyMoveLeft || code === this.keyMoveRight || code === this.keyMoveUp || code === this.keyMoveDown){
             this.updateMoveInput(code)
         }
         
@@ -167,6 +170,12 @@ export class InputManager {
             case this.keyMoveRight:
                 this.moveVectorOpposingKeys(this.keyMoveLeft, 1, isPressed, true, this.moveVector)
                 break
+            case this.keyMoveUp:
+                this.moveVector.z = isPressed ? 1 : 0
+                break
+            case this.keyMoveDown:
+                this.moveVector.z = isPressed ? -1 : 0
+                break
         }
     }
 
@@ -193,7 +202,7 @@ export class InputManager {
         document.dispatchEvent(new Event(InputManager.strEMoveMouseKeysPressed))
     }
 
-    moveVectorOpposingKeys(oppKey: string, curNum: number, isPressed: boolean, isX: boolean, curVector: Vector2){
+    moveVectorOpposingKeys(oppKey: string, curNum: number, isPressed: boolean, isX: boolean, curVector: Vector2 | Vector3){
         if(isPressed){
             if(isX){
                 curVector.x = curNum

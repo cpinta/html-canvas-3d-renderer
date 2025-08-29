@@ -76,7 +76,7 @@ const Canvas = (props : CanvasProps) => {
                 renderer.current.camera.lRotate(new Vector3(-mouseVec.y, 0, 0))
                 renderer.current.camera.wRotate(new Vector3(0, mouseVec.x, 0))
 
-                renderer.current.camera.wMovePosition(new Vector3(input.current.moveVector.x, 0, input.current.moveVector.y).multiply(deltaTime * moveVelocity))
+                renderer.current.camera.wMovePosition(new Vector3(input.current.moveVector.x, input.current.moveVector.z, input.current.moveVector.y).multiply(deltaTime * moveVelocity))
                 renderer.current.draw(rendererProps.current)
 
                 if(frameCount % updateFPSevery == 0){
