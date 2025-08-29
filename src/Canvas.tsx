@@ -11,8 +11,8 @@ const Canvas = (props : CanvasProps) => {
 
     const canvasRef = useRef(null);
     const fileRef = useRef(null);
-    const renderer = useRef(new Renderer())
     const rendererProps = useRef({} as RendererProps)
+    const renderer = useRef(new Renderer())
     const input = useRef(new InputManager())
 
     const prevTime = useRef<number>(Date.now());
@@ -51,13 +51,15 @@ const Canvas = (props : CanvasProps) => {
         context.lineWidth = 1
         context.strokeStyle = '#FF0000'
 
-        rendererProps.current = {canvas:canvas, ctx: context, scaleMultiplier: displayScale, deltaTime: 0, frameCount: frameCount}
+        rendererProps.current = {ctx:context, deltaTime: 0, frameCount: frameCount}
 
 
         let moveVelocity = 10
         let mouseSensitivity = 0.0025
 
 
+
+        renderer.current.setup(context, displayScale)
         //Our draw came here
         const render = () => {
             frameCount++

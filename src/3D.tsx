@@ -55,14 +55,14 @@ export class Transform3D{
         this.matrixChanged()
     }
 
-    combineMatrix(){
+    getCombinedMatrix(){
         this.combinedMatrix = MMath.multiply(this.localMatrix, this.worldMatrix)
         this.isCombined = true
     }
 
     getFwdVector(){
         if(!this.isCombined){
-            this.combineMatrix()
+            this.getCombinedMatrix()
         }
         return new Vector3(this.combinedMatrix[0][2], this.combinedMatrix[1][2], this.combinedMatrix[2][2])
     }
@@ -86,10 +86,10 @@ export class Object3D extends Transform3D{
         this.name = name
     }
 
-    getWorldVerts(): Vector3[]{
+    getWVerts(): Vector3[]{
         let verts: Vector3[] = []
         if(!this.isCombined){
-            this.combineMatrix()
+            this.getCombinedMatrix()
         }
         for(let i = 0; i < this.mesh.rawVerts.length; i++){
             verts[i] = MMath.toVector3(MMath.multiply(this.combinedMatrix, this.mesh.rawVerts[i].toMatrix4()))
@@ -97,7 +97,21 @@ export class Object3D extends Transform3D{
         return verts
     }
 
-    getLocalVerts(): Vector3[]{
+    getWVertIndex(index: number): Vector3{
+        if(!this.isCombined){
+            this.getCombinedMatrix()
+        }
+        return MMath.toVector3(MMath.multiply(this.combinedMatrix, this.mesh.rawVerts[index].toMatrix4()))
+    }
+
+    getWVert(vert: Vector3): Vector3{
+        if(!this.isCombined){
+            this.getCombinedMatrix()
+        }
+        return MMath.toVector3(MMath.multiply(this.combinedMatrix, vert.toMatrix4()))
+    }
+
+    getLVerts(): Vector3[]{
         let localVerts: Vector3[] = []
         for(let i = 0; i < this.mesh.rawVerts.length; i++){
             localVerts[i] = MMath.toVector3(MMath.multiply(this.localMatrix, this.mesh.rawVerts[i].toMatrix4()))
