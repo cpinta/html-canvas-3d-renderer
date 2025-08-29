@@ -26,19 +26,18 @@ export class Renderer{
 
     constructor(){
 
-        let cube: Cube = new Cube(new Vector3(0, 0, 5), 2, Color.lightGreen)
+        let cube: Cube = new Cube(new Vector3(0, 0, 5), 1, Color.lightGreen)
         // let cube2: Cube = new Cube(new Vector3(6, 0, 0), 3, Color.hotPink)
 
         // let plane: Plane = new Plane(new Vector3(0, -3, 0), 5, Color.lightPurple)
 
-        let planeAway: Plane = new Plane(new Vector3(0, 3, 0), 5, Color.lightPurple)
-        planeAway.wRotate(new Vector3(Math.PI/2, 0, 0))
+        // let planeAway: Plane = new Plane(new Vector3(0, 3, 0), 5, Color.lightPurple)
+        // planeAway.wRotate(new Vector3(Math.PI/2, 0, 0))
 
         // this.objects.push(plane)
         this.objects.push(cube)
         // this.objects.push(cube2)
-        this.objects.push(planeAway)
-        // this.objects.push(line)
+        // this.objects.push(planeAway)
         
         this.camera.wMovePosition(new Vector3(0, 0, 0))
     }
@@ -66,8 +65,8 @@ export class Renderer{
     }
 
     setObj(obj: Object3D){
-        this.objects[0] = obj
-        this.objects[0].worldMatrix = identityMatrix4
+        this.objects.push(obj)
+        obj.wMovePosition(new Vector3(10,1,0))
     }
 
 
@@ -158,9 +157,18 @@ export class Renderer{
                         screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth))
                         facesDrawn++
 
-                        let otherPoint = Vector3.fromV3(avgVertLocation).add(this.objVertToCamera(obj, face.normal))
+                        let normalVert: Vector3 = face.normal
+                        normalVert = obj.getWVert(normalVert)
+                        normalVert = this.worldVertToCamera(normalVert)
 
-                        let line: Line = new Line(avgVertLocation, otherPoint, Color.orangeJuiceOrange)
+                        // normalVert = 
+                        // normalVert = this.objVertToCamera(obj, normalVert)
+                        // normalVert = MMath.toVector3(MMath.multiply(inv(this.camera.worldMatrix), normalVert.toMatrix4()))
+                        // normalVert = MMath.toVector3(MMath.multiply(this.camera.localMatrix, normalVert.toMatrix4()))
+
+                        let otherPoint = avgVertLocation.add(normalVert)
+
+                        let line: Line = new Line(avgVertLocation, otherPoint, Color.white)
                         let debugVerts = line.mesh.rawVerts
 
                         if(!debugVerts){
@@ -206,8 +214,6 @@ export class Renderer{
         try{
             for(let i=0;i<screenSpaceFaces.length;i++){
                 this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i])
-                ctx.fillStyle = Color.white.toHex()
-                ctx.fillText(screenSpaceFaces[i].depth.toString(), worldScreenSpaceVerts[screenSpaceFaces[i].vertStartIndex].x, worldScreenSpaceVerts[screenSpaceFaces[i].vertStartIndex].y)
             }
         }
         catch(e){
@@ -217,7 +223,7 @@ export class Renderer{
         }
         try{
             for(let i=0;i<debugScreenSpaceFaces.length;i++){
-                this.drawPolygon(ctx, debugScreenSpaceVerts, debugScreenSpaceFaces[i])
+                this.drawPolygon(ctx, debugScreenSpaceVerts, debugScreenSpaceFaces[i], false)
             }
         }
         catch(e){
@@ -251,7 +257,7 @@ export class Renderer{
         return vert
     }
 
-    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart){
+    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true){
         ctx.beginPath()
         let face: Face = fdc.face
 
@@ -265,9 +271,11 @@ export class Renderer{
 
         let newZ: number = ((this.farPlane)/(this.farPlane - this.nearPlane)) + 1/fdc.depth *((-this.farPlane * this.nearPlane)/(this.farPlane - this.nearPlane))
 
-        newColor.r = face.color.r -(face.color.r * newZ);
-        newColor.g = face.color.g -(face.color.g * newZ);
-        newColor.b = face.color.b -(face.color.b * newZ);
+        if(isShaded){
+            newColor.r = face.color.r -(face.color.r * newZ);
+            newColor.g = face.color.g -(face.color.g * newZ);
+            newColor.b = face.color.b -(face.color.b * newZ);
+        }
 
         ctx.fillStyle = newColor.rgbaString()
         ctx.strokeStyle = newColor.rgbaString()
@@ -282,10 +290,15 @@ export class FaceDepthStart {
     face: Face
     depth: number = -1
     vertStartIndex: number = 0
+    isDebug: boolean
+    debugText: string = ""
 
-    constructor(face: Face, vertStartIndex: number, depth: number){
+    constructor(face: Face, vertStartIndex: number, depth: number, isDebug: boolean = false, debugText: string = ""){
         this.face = face
         this.vertStartIndex = vertStartIndex
         this.depth = depth
+        
+        this.isDebug = isDebug
+        this.debugText = debugText
     }
 }
