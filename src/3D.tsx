@@ -84,6 +84,7 @@ export class Object3D extends Transform3D{
         super()
         this.mesh = mesh
         this.name = name
+        this.mesh.obj = this
     }
 
     getWVerts(): Vector3[]{
@@ -117,12 +118,16 @@ export class Object3D extends Transform3D{
             localVerts[i] = MMath.toVector3(MMath.multiply(this.localMatrix, this.mesh.rawVerts[i].toMatrix4()))
         }
         return localVerts
+    }
 
+    getLVert(vert: Vector3): Vector3{
+        return MMath.toVector3(MMath.multiply(this.localMatrix, vert.toMatrix4()))
     }
 }
 
 export class Mesh {
     rawVerts: Vector3[]
+    obj: Object3D | null = null
 
     //key = largestEdgeIndex, value = faceIndex
     vert2faceMap: Map<number, number[]> = new Map()
@@ -188,7 +193,7 @@ export class Vector3 {
     y: number;
     z: number;
 
-    constructor(x : number, y : number, z : number){
+    constructor(x : number=0, y : number=0, z : number=0){
         this.x = x
         this.y = y
         this.z = z
