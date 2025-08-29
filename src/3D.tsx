@@ -261,4 +261,12 @@ export class Vector3 {
         newVector.z += vector.z
         return newVector
     }
+
+    subtract(vector: Vector3){
+        let newVector = new Vector3(this.x, this.y, this.z)
+        newVector.x -= vector.x
+        newVector.y -= vector.y
+        newVector.z -= vector.z
+        return newVector
+    }
 }
