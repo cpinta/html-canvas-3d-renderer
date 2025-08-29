@@ -248,7 +248,7 @@ export class Vector3 {
     }
 
     angleWith(vector: Vector3){
-        return Math.acos(this.dotWith(vector) / (this.magnitude() * vector.magnitude()))
+        return Math.acos(this.dotWith(vector) / (this.magnitude() * vector.magnitude())) * (180/Math.PI)
     }
 
     dotWith(vector: Vector3){
