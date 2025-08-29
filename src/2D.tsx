@@ -97,6 +97,8 @@ export class Color {
     static hotPink = Color.fromHex('#FF00AA')
     static lightPurple = Color.fromHex('#AAAAFF')
     static lightGreen = Color.fromHex('#00FFAA')
+    static white = Color.fromHex('#FFFFFF')
+    static black = Color.fromHex('#000000')
     
     static exampleArray7 = [
         this.darkBlue,
