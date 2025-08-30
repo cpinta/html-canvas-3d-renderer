@@ -31,7 +31,7 @@ class FileImport3D{
                         vn.push(Number.parseInt(vertInds[2]) - 1)
                     }
                     faces.push(face)
-                    facesObjs.push(new Face(face, color, new Vector3(vn[0], vn[1], vn[2])))
+                    facesObjs.push(new Face(face, color, new Vector3(vertNormals[vn[0]].x, vertNormals[vn[0]].y, vertNormals[vn[0]].z)))
                     break
                 case "#":
                     break
