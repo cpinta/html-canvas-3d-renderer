@@ -259,6 +259,11 @@ export class Vector3 {
         return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2) + Math.pow(this.z, 2))
     }
 
+    normalize(){
+        let newVector: Vector3 = Vector3.fromV3(this)
+        return newVector.divide(newVector.magnitude())
+    }
+
     add(vector: Vector3){
         let newVector = new Vector3(this.x, this.y, this.z)
         newVector.x += vector.x
