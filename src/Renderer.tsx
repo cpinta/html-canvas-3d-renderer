@@ -27,17 +27,8 @@ export class Renderer{
     constructor(){
 
         let cube: Cube = new Cube(new Vector3(0, 0, 5), 1, Color.lightGreen)
-        // let cube2: Cube = new Cube(new Vector3(6, 0, 0), 3, Color.hotPink)
 
-        // let plane: Plane = new Plane(new Vector3(0, -3, 0), 5, Color.lightPurple)
-
-        // let planeAway: Plane = new Plane(new Vector3(0, 3, 0), 5, Color.lightPurple)
-        // planeAway.wRotate(new Vector3(Math.PI/2, 0, 0))
-
-        // this.objects.push(plane)
         this.objects.push(cube)
-        // this.objects.push(cube2)
-        // this.objects.push(planeAway)
         
         this.camera.wMovePosition(new Vector3(0, 0, 0))
     }
@@ -66,26 +57,17 @@ export class Renderer{
 
     setObj(obj: Object3D){
         this.objects.push(obj)
-        obj.wMovePosition(new Vector3(10,1,0))
+        // obj.wMovePosition(new Vector3(10,1,0))
     }
 
 
     getScreenSpaceOfVert(vert: Vector3){
-        let xdiff = vert.x
-        let ydiff = vert.y
-        let zdiff = vert.z
-
-        if(zdiff < this.nearPlane){
+        if(vert.z < this.nearPlane){
             return null
         }
 
-        let vertHyp = MMath.getHypotenuse(ydiff, zdiff)
-        let horzHyp = MMath.getHypotenuse(ydiff, xdiff)
-        let vertAngle = Math.atan(ydiff/zdiff)
-        let horzAngle = Math.atan(xdiff/zdiff)
-
-        let shortVert = Math.tan(-vertAngle) * this.fov
-        let shortHorz = Math.tan(horzAngle) * this.fov
+        let shortVert = -vert.y/vert.z * this.fov
+        let shortHorz = vert.x/vert.z * this.fov
 
         shortHorz *= this.scaleMultiplier
         shortVert *= this.scaleMultiplier
@@ -93,7 +75,7 @@ export class Renderer{
         shortHorz += this.dimensions.x/2
         shortVert += this.dimensions.y/2
         
-        return new Vector3(shortHorz, shortVert, zdiff)
+        return new Vector3(shortHorz, shortVert, vert.z)
     }
 
     drawMeshes(ctx: CanvasRenderingContext2D){
@@ -113,6 +95,7 @@ export class Renderer{
             let mesh: Mesh = obj.mesh
             let localScreenSpaceVerts: Vector3[] = [] 
 
+            let Wverts = obj.getWVerts()
             let verts = this.objVertsToCamera(obj)
 
             for(let i=0;i<verts.length;i++){
@@ -132,20 +115,22 @@ export class Renderer{
                     let center: Vector3 = Vector3.zero()
                     for(let l=0;l<faceIndexes.length;l++){
                         let face: Face = mesh.faceArr[faceIndexes[l]]
-                        let color = this.colors[facesDrawn % this.colors.length]
                         let averageDepth: number = 0
                         let skipped: boolean = false
 
                         let avgVertLocation: Vector3 = Vector3.zero()
+                        let avgWVertLocation: Vector3 = Vector3.zero()
 
                         for(let m=0;m<face.vertIndexes.length;m++){
                             if(face.vertIndexes[m] >= localScreenSpaceVerts.length || localScreenSpaceVerts[face.vertIndexes[m]] == undefined){
                                 skipped = true
                                 break
                             }
+                            
                             averageDepth += localScreenSpaceVerts[face.vertIndexes[m]].z
 
                             avgVertLocation = avgVertLocation.add(verts[face.vertIndexes[m]])
+                            avgWVertLocation = avgWVertLocation.add(Wverts[face.vertIndexes[m]])
                         }
                         if(skipped){
                             continue
@@ -153,18 +138,16 @@ export class Renderer{
 
                         averageDepth /= face.vertIndexes.length * 2
                         avgVertLocation.divide(face.vertIndexes.length)
+                        avgWVertLocation.divide(face.vertIndexes.length)
+
 
                         screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth))
-                        facesDrawn++
-
                         let normalVert: Vector3 = face.normal
-                        normalVert = obj.getWVert(normalVert)
-                        normalVert = this.worldVertToCamera(normalVert)
+                        let normalWVert = obj.getWVert(normalVert)
+                        normalVert = this.worldVertToCamera(normalWVert)
 
-                        // normalVert = 
-                        // normalVert = this.objVertToCamera(obj, normalVert)
-                        // normalVert = MMath.toVector3(MMath.multiply(inv(this.camera.worldMatrix), normalVert.toMatrix4()))
-                        // normalVert = MMath.toVector3(MMath.multiply(this.camera.localMatrix, normalVert.toMatrix4()))
+                        
+                        let losVector: Vector3 = normalWVert.subtract(this.camera.getWPosition()).normalize()
 
                         let otherPoint = avgVertLocation.add(normalVert)
 
@@ -191,7 +174,19 @@ export class Renderer{
                             continue;
                         }
 
-                        debugScreenSpaceFaces.push(new FaceDepthStart(line.mesh.faceArr[0], debugScreenSpaceVerts.length - 2, averageDepth+1))
+                        // let debugText: string = losVector.toString()
+                        let temp = avgWVertLocation.subtract(this.camera.getWPosition()).normalize().dotWith(face.normal)
+                        // let debugText: string = temp[0]+", "+temp[1]+", "+temp[2]
+                        let debugText: string = Math.trunc((temp * 100))/100 + ""
+                        if( temp > 0){
+                            screenSpaceFaces.pop()
+                        }
+                        else{
+                            debugScreenSpaceFaces.push(new FaceDepthStart(line.mesh.faceArr[0], debugScreenSpaceVerts.length - 2, averageDepth+1, true, debugText))
+                        }
+
+
+                        
                     }
                 }
             }
@@ -214,6 +209,7 @@ export class Renderer{
         try{
             for(let i=0;i<screenSpaceFaces.length;i++){
                 this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i])
+                facesDrawn++
             }
         }
         catch(e){
@@ -283,6 +279,11 @@ export class Renderer{
         ctx.closePath()
         ctx.stroke()
         ctx.fill()
+
+        if(fdc.isDebug){
+            ctx.fillStyle = Color.lightPurple.toHex()
+            ctx.fillText(fdc.debugText, screenSpaceVerts[face.vertIndexes[face.vertIndexes.length-1] + fdc.vertStartIndex].x, screenSpaceVerts[face.vertIndexes[face.vertIndexes.length-1] + fdc.vertStartIndex].y)
+        }
     }
 }
 
