@@ -57,6 +57,8 @@ const Canvas = (props : CanvasProps) => {
         let moveVelocity = 10
         let mouseSensitivity = 0.0025
 
+        let camRotationSpeed: Vector2 = new Vector2(0.1, 0.1) 
+        let objectRotationSpeed: Vector2 = new Vector2(1, 0.1) 
 
 
         renderer.current.setup(context, displayScale)
@@ -74,8 +76,12 @@ const Canvas = (props : CanvasProps) => {
                 let mouseVec: Vector2 = input.current.mouseVector
                 // mouseVec.x *= mouseSensitivity
                 // mouseVec.y *= mouseSensitivity
+
+
                 renderer.current.camera.resetRotation()
-                renderer.current.camera.camRotate(new Vector2(mouseVec.x/window.innerWidth-0.5, mouseVec.y/window.innerHeight-0.5).multiply(0.25))
+                renderer.current.camera.camRotate(new Vector2((mouseVec.x/window.innerWidth-0.5)*camRotationSpeed.x, (mouseVec.y/window.innerHeight-0.5)*camRotationSpeed.y))
+                renderer.current.objects[0].resetRotation()
+                renderer.current.objects[0].wRotate(new Vector3((mouseVec.y/window.innerHeight-0.5)*objectRotationSpeed.y, (mouseVec.x/window.innerWidth-0.5)*objectRotationSpeed.x,0))
 
                 // renderer.current.camera.wMovePosition(new Vector3(input.current.moveVector.x, input.current.moveVector.z, input.current.moveVector.y).multiply(deltaTime * moveVelocity))
                 renderer.current.draw(rendererProps.current)

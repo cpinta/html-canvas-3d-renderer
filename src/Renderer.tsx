@@ -15,7 +15,7 @@ export class Renderer{
     
     camera: Camera = new Camera()
     objects: Object3D[] = []
-    fov: number = 360;
+    fov: number = 360*2;
     scaleMultiplier: number = 1
     dimensions: Vector2 = Vector2.zero()
 

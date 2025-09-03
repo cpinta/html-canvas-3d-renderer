@@ -85,11 +85,8 @@ export class Camera extends Transform3D{
     }
     resetRotation(): void {
         super.resetRotation()
-        this.wMovePosition(new Vector3(0, 2.45, 4.1))
-        this.camRotate(new Vector2(-Math.PI,0.47))
-    }
-
-    reset(){
+        this.wMovePosition(new Vector3(0, 2.45*1.6, 4.1*1.6))
+        this.camRotate(new Vector2(-Math.PI,0.5))
     }
 }
 
