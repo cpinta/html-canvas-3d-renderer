@@ -42,7 +42,7 @@ const Canvas = (props : CanvasProps) => {
         let animationFrameId : number
         let updateFPSevery: number = 20
 
-        let displayScale = 2
+        let displayScale = 1
         canvas.width = 512 * displayScale
         canvas.height = 288 * displayScale
 
@@ -98,7 +98,7 @@ const Canvas = (props : CanvasProps) => {
 
     function clearCanvas(ctx: CanvasRenderingContext2D){
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        ctx.fillStyle = '#000000'
+        ctx.fillStyle = Color.background.toHex()
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     }
 

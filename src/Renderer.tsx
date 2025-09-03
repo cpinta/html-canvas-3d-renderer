@@ -3,6 +3,7 @@ import { Cube, Line, Plane } from "./Primitives"
 import { Color, Vector2 } from "./2D"
 import { identityMatrix4, MMath } from "./Matrix"
 import { inv } from "mathjs"
+import FileImport3D from "./FileImport3D"
 
 export type RendererProps = {
     ctx: CanvasRenderingContext2D,
@@ -14,24 +15,28 @@ export class Renderer{
     
     camera: Camera = new Camera()
     objects: Object3D[] = []
-    fov: number = 90;
+    fov: number = 360;
     scaleMultiplier: number = 1
     dimensions: Vector2 = Vector2.zero()
 
     nearPlane: number = 0
     nearShade: number = 2
-    farPlane: number = 50
+    farPlane: number = 4
 
     
     colors: Color[] = []
 
     constructor(){
 
-        let cube: Cube = new Cube(new Vector3(0, 0, 5), 1, Color.lightGreen)
+        // let cube: Cube = new Cube(new Vector3(0, 0, 5), 1, Color.lightGreen)
+        let island: Object3D = FileImport3D.ImportIsland()
 
-        this.objects.push(cube)
+        // this.objects.push(cube)
+        this.objects.push(island)
         
-        this.camera.wMovePosition(new Vector3(0, 0, 0))
+        this.camera.wMovePosition(new Vector3(0, 2.45, 4.1))
+        this.camera.wRotate(new Vector3(0,-Math.PI,0))
+        this.camera.lRotate(new Vector3(-0.47,0,0))
     }
 
     setup(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
@@ -85,11 +90,6 @@ export class Renderer{
 
         let worldScreenSpaceVerts: Vector3[] = [] 
         let screenSpaceFaces: FaceDepthStart[] = []
-
-
-        let debugObjects: Object3D[] = []
-        let debugScreenSpaceVerts: Vector3[] = []
-        let debugScreenSpaceFaces: FaceDepthStart[] = []
         
         for(let j=0;j<this.objects.length;j++){
             let obj: Object3D = this.objects[j]
@@ -142,52 +142,15 @@ export class Renderer{
                         avgWVertLocation.divide(face.vertIndexes.length)
 
 
-                        screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth))
                         let normalVert: Vector3 = face.normal
                         let normalWVert = obj.getWVert(normalVert)
                         normalVert = this.worldVertToCamera(normalWVert)
 
+                        let facingCamDot = avgWVertLocation.subtract(this.camera.getWPosition()).normalize().dotWith(face.normal)
                         
-                        let losVector: Vector3 = normalWVert.subtract(this.camera.getWPosition()).normalize()
-
-                        let otherPoint = avgVertLocation.add(normalVert)
-
-                        let line: Line = new Line(avgVertLocation, otherPoint, Color.white)
-                        let debugVerts = line.mesh.rawVerts
-
-                        if(!debugVerts){
-                            continue
+                        if(facingCamDot < 0){
+                            screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth))
                         }
-
-                        let debugSSV1 = this.getScreenSpaceOfVert(debugVerts[0])
-                        let debugSSV2 = this.getScreenSpaceOfVert(debugVerts[1])
-
-                        if(debugSSV1){
-                            debugScreenSpaceVerts.push(debugSSV1)
-                        }
-                        else{
-                            continue;
-                        }
-                        if(debugSSV2){
-                            debugScreenSpaceVerts.push(debugSSV2)
-                        }
-                        else{
-                            continue;
-                        }
-
-                        // let debugText: string = losVector.toString()
-                        let temp = avgWVertLocation.subtract(this.camera.getWPosition()).normalize().dotWith(face.normal)
-                        // let debugText: string = temp[0]+", "+temp[1]+", "+temp[2]
-                        let debugText: string = Math.trunc((temp * 100))/100 + ""
-                        if( temp > 0){
-                            screenSpaceFaces.pop()
-                        }
-                        else{
-                            debugScreenSpaceFaces.push(new FaceDepthStart(line.mesh.faceArr[0], debugScreenSpaceVerts.length - 2, averageDepth+1, true, debugText))
-                        }
-
-
-                        
                     }
                 }
             }
@@ -207,26 +170,9 @@ export class Renderer{
             }
         )
 
-        try{
-            for(let i=0;i<screenSpaceFaces.length;i++){
-                this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i])
-                facesDrawn++
-            }
-        }
-        catch(e){
-            if(e instanceof Error){
-                console.error(e.toString()+'\n\noccured in screen space')
-            }
-        }
-        try{
-            for(let i=0;i<debugScreenSpaceFaces.length;i++){
-                this.drawPolygon(ctx, debugScreenSpaceVerts, debugScreenSpaceFaces[i], false)
-            }
-        }
-        catch(e){
-            if(e instanceof Error){
-                console.error(e.toString()+'\n\noccured in debug screen space '+debugScreenSpaceFaces.length)
-            }
+        for(let i=0;i<screenSpaceFaces.length;i++){
+            this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], true)
+            facesDrawn++
         }
 
 

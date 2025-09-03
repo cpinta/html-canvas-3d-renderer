@@ -1,5 +1,6 @@
 import { Color } from "./2D"
 import { Face, Mesh, Object3D, Vector3 } from "./3D"
+import { Models } from "./Models"
 
 class FileImport3D{
     static OBJ_Import(fileContent: string, color: Color){
@@ -8,6 +9,7 @@ class FileImport3D{
         let faces: number[][] = []
         let facesObjs: Face[] = []
         let vertNormals: Vector3[] = []
+        let currentColor: Color = Color.hotPink
 
         let list: string[] = fileContent.split("\n")
         for(let i=0;i<list.length;i++){
@@ -17,7 +19,7 @@ class FileImport3D{
                     objName = args[1]
                     break
                 case "v":
-                    verts.push(new Vector3(Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
+                    verts.push(new Vector3(-Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
                     break
                 case "vn":
                     vertNormals.push(new Vector3(Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
@@ -31,9 +33,18 @@ class FileImport3D{
                         vn.push(Number.parseInt(vertInds[2]) - 1)
                     }
                     faces.push(face)
-                    facesObjs.push(new Face(face, color, new Vector3(vertNormals[vn[0]].x, vertNormals[vn[0]].y, vertNormals[vn[0]].z)))
+                    facesObjs.push(new Face(face, currentColor, new Vector3(vertNormals[vn[0]].x, vertNormals[vn[0]].y, vertNormals[vn[0]].z)))
                     break
                 case "#":
+                    break
+                case "usemtl":
+                    let curMatName: string = args[1]
+                    if(Color.matColors.has(curMatName)){
+                        currentColor = Color.fromColor(Color.matColors.get(curMatName)!)
+                    }
+                    else{
+                        let temp = 0
+                    }
                     break
                 default:
                     break
@@ -48,6 +59,11 @@ class FileImport3D{
     static GITF_Import(fileContent: string){
 
     }
+    
+    static ImportIsland(){
+        return FileImport3D.OBJ_Import(Models.strIsland, Color.hotPink)
+    }
 }
+
 
 export default FileImport3D

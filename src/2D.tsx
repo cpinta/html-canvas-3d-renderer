@@ -90,6 +90,10 @@ export class Color {
         }
     }
 
+    static fromColor(color:Color){
+        return new Color(color.r, color.g, color.b, color.a)
+    }
+
     static darkBlue = Color.fromHex('#0000FF')
     static lightBlue = Color.fromHex('#00AAEE')
     static orangeJuiceOrange = Color.fromHex('#EEAA00')
@@ -111,4 +115,13 @@ export class Color {
         this.lightPurple,
         this.lightGreen
     ]
+
+    static matColors: Map<string, Color> = new Map([
+        ["Grass", Color.fromHex("#4AB01C")],
+        ["House", Color.fromHex("#8A57B0")],
+        ["Roof", Color.fromHex("#E70070")],
+        ["Tree", Color.fromHex("#6F3607")],
+        ["Door", Color.fromHex("#6F3607")],
+        ["Land", Color.fromHex("#6F3607")]
+    ])
 }
