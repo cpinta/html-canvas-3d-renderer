@@ -1,6 +1,5 @@
 import { Color } from "./2D"
 import { Face, Mesh, Object3D, Vector3 } from "./3D"
-import { Models } from "./Models"
 
 class FileImport3D{
     static OBJ_Import(fileContent: string, color: Color){
@@ -60,8 +59,10 @@ class FileImport3D{
 
     }
     
-    static ImportIsland(){
-        return FileImport3D.OBJ_Import(Models.strIsland, Color.hotPink)
+    static async ImportIsland(){
+        const response = await fetch('/3d renderer island.obj');
+        const islandContent = await response.text();
+        return FileImport3D.OBJ_Import(islandContent, Color.hotPink)
     }
 }
 

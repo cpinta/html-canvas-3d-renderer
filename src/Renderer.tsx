@@ -27,19 +27,17 @@ export class Renderer{
     colors: Color[] = []
 
     constructor(){
-
-        // let cube: Cube = new Cube(new Vector3(0, 0, 5), 1, Color.lightGreen)
-        let island: Object3D = FileImport3D.ImportIsland()
-
-        // this.objects.push(cube)
-        this.objects.push(island)
-        
         this.camera.resetRotation()
     }
 
-    setup(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
+    async setup(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
         this.dimensions = new Vector2(ctx.canvas.width, ctx.canvas.height)
         this.scaleMultiplier = scaleMultiplier
+
+        const island = await FileImport3D.ImportIsland();
+        if(this.objects.length == 0){
+            this.objects.push(island);
+        }
     }
 
     displayMatrix(ctx: CanvasRenderingContext2D, mat:number[][], offset: Vector2){
@@ -60,7 +58,7 @@ export class Renderer{
     }
 
     setObj(obj: Object3D){
-        this.objects.push(obj)
+        // this.objects.push(obj)
         // obj.wMovePosition(new Vector3(10,1,0))
     }
 
