@@ -70,13 +70,14 @@ const Canvas = (props : CanvasProps) => {
                 timeSinceStart.current += deltaTime;
 
                 clearCanvas(context)
-                let mouseVec: Vector2 = input.current.getMouseVector()
-                mouseVec.x *= mouseSensitivity
-                mouseVec.y *= mouseSensitivity
-                renderer.current.camera.lRotate(new Vector3(-mouseVec.y, 0, 0))
-                renderer.current.camera.wRotate(new Vector3(0, mouseVec.x, 0))
+                // let mouseVec: Vector2 = input.current.getMouseVector()
+                let mouseVec: Vector2 = input.current.mouseVector
+                // mouseVec.x *= mouseSensitivity
+                // mouseVec.y *= mouseSensitivity
+                renderer.current.camera.resetRotation()
+                renderer.current.camera.camRotate(new Vector2(mouseVec.x/window.innerWidth-0.5, mouseVec.y/window.innerHeight-0.5).multiply(0.25))
 
-                renderer.current.camera.wMovePosition(new Vector3(input.current.moveVector.x, input.current.moveVector.z, input.current.moveVector.y).multiply(deltaTime * moveVelocity))
+                // renderer.current.camera.wMovePosition(new Vector3(input.current.moveVector.x, input.current.moveVector.z, input.current.moveVector.y).multiply(deltaTime * moveVelocity))
                 renderer.current.draw(rendererProps.current)
 
                 if(frameCount % updateFPSevery == 0){
@@ -84,6 +85,9 @@ const Canvas = (props : CanvasProps) => {
                 }
 
                 context.fillText(fps.current.toString(), 20, 100)
+                context.fillText(mouseVec.x.toString()+", "+mouseVec.y.toString(), 20, 200)
+                context.fillText(window.innerWidth.toString()+", "+window.innerHeight.toString(), 20, 220)
+                context.fillText((Math.trunc((mouseVec.x/window.innerWidth-0.5)*100)/100).toString()+", "+(Math.trunc((mouseVec.y/window.innerHeight-0.5)*100)/100).toString(), 20, 240)
             }
             animationFrameId = window.requestAnimationFrame(() => {
                 render();
@@ -158,7 +162,7 @@ const Canvas = (props : CanvasProps) => {
 
     return(
         <>
-            <canvas ref={canvasRef} {...props} style={{width:100+`%`, height:'0%', imageRendering: 'pixelated'}} />
+            <canvas ref={canvasRef} {...props} style={{width:100+`%`, height:'99dvh', imageRendering: 'pixelated'}} />
             <input ref={fileRef} type='file' onChange={openFilePicker} style={{display:'none'}} />
         </>
     );

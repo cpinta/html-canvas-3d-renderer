@@ -34,9 +34,7 @@ export class Renderer{
         // this.objects.push(cube)
         this.objects.push(island)
         
-        this.camera.wMovePosition(new Vector3(0, 2.45, 4.1))
-        this.camera.wRotate(new Vector3(0,-Math.PI,0))
-        this.camera.lRotate(new Vector3(-0.47,0,0))
+        this.camera.resetRotation()
     }
 
     setup(ctx: CanvasRenderingContext2D, scaleMultiplier: number){

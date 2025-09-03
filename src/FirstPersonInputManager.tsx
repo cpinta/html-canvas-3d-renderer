@@ -6,6 +6,7 @@ export class InputManager {
     key2eventMap: Map<string, string> = new Map<string, string>()
     mouseButtons: Set<number> = new Set()
 
+    useMouse: boolean = false
     mouseX: number = 0
     mouseY: number = 0
     mouseDX: number = 0
@@ -15,7 +16,6 @@ export class InputManager {
     MOUSE_KEY_SPEED: number = 100
 
     moveVector: Vector3 = new Vector3()
-    mouseVector: Vector2 = new Vector2()
     mouseDiffVector: Vector2 = new Vector2()
 
     keyMoveForward: string = "KeyW"
@@ -37,6 +37,40 @@ export class InputManager {
     static strELockMouse = 'lockMouse'
     static strEOpenFilePicker = 'openFilePicker'
     static strEMoveMouseKeysPressed = 'moveMouseKeysPressed'
+
+    // switch (e.code){
+    //         case 'KeyF':
+    //             if(!fileRef.current){
+    //                 return
+    //             }
+    //             let file : HTMLInputElement = fileRef.current
+    //             file.click()
+    //             break
+    //         case 'Space':
+    //             renderer.current.camera.wMovePosition(new Vector3(0, 1, 0))
+    //             break
+    //         case 'ShiftLeft':
+    //             renderer.current.camera.wMovePosition(new Vector3(0, -1, 0))
+    //             break
+    //         case 'KeyW':
+    //             renderer.current.camera.wMovePosition(new Vector3(0, 0, 0.5))
+    //             break
+    //         case 'KeyS':
+    //             renderer.current.camera.wMovePosition(new Vector3(0, 0, -0.5))
+    //             break
+    //         case 'KeyA':
+    //             renderer.current.camera.wMovePosition(new Vector3(-1, 0, 0))
+    //             break
+    //         case 'KeyD':
+    //             renderer.current.camera.wMovePosition(new Vector3(1, 0, 0))
+    //             break
+    //         case 'ArrowLeft':
+    //             renderer.current.camera.wRotate(new Vector3(0, -0.03, 0))
+    //             break
+    //         case 'ArrowRight':
+    //             renderer.current.camera.wRotate(new Vector3(0, 0.03, 0))
+    //             break
+    //     }
 
     constructor(){
         window.addEventListener('keydown', (e) => {
@@ -61,11 +95,16 @@ export class InputManager {
         })
 
         window.addEventListener('mousemove', (e) => {
-            this.mouseVector.x = e.clientX
-            this.mouseVector.y = e.clientY
+            if(!this.useMouse){
+                return;
+            }
+            this.mouseDX = e.movementX
+            this.mouseDY = e.movementY
+            this.mouseX = e.clientX
+            this.mouseY = e.clientY
 
-            this.mouseDiffVector.x += e.movementX
-            this.mouseDiffVector.y += e.movementY
+            this.mouseDiffVector.x += this.mouseDX
+            this.mouseDiffVector.y += this.mouseDY
         })
 
         window.addEventListener('wheel', (e) => {

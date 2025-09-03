@@ -1,5 +1,5 @@
 
-import { Color } from "./2D";
+import { Color, Vector2 } from "./2D";
 import { identityMatrix3, identityMatrix4, MMath } from "./Matrix"
 
 
@@ -70,10 +70,27 @@ export class Transform3D{
     matrixChanged(){
         this.isCombined = false
     }
+    
+    resetRotation(){
+        this.localMatrix = structuredClone(identityMatrix4)
+        this.worldMatrix = structuredClone(identityMatrix4)
+        this.combinedMatrix = structuredClone(identityMatrix4)
+    }
 }
 
 export class Camera extends Transform3D{
+    camRotate(rotate:Vector2){
+        this.lRotate(new Vector3(-rotate.y, 0, 0))
+        this.wRotate(new Vector3(0, rotate.x, 0))
+    }
+    resetRotation(): void {
+        super.resetRotation()
+        this.wMovePosition(new Vector3(0, 2.45, 4.1))
+        this.camRotate(new Vector2(-Math.PI,0.47))
+    }
 
+    reset(){
+    }
 }
 
 export class Object3D extends Transform3D{
