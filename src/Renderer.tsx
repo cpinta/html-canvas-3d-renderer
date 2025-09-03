@@ -18,7 +18,8 @@ export class Renderer{
     scaleMultiplier: number = 1
     dimensions: Vector2 = Vector2.zero()
 
-    nearPlane: number = 1
+    nearPlane: number = 0
+    nearShade: number = 2
     farPlane: number = 50
 
     
@@ -265,12 +266,13 @@ export class Renderer{
 
         let newColor: Color = new Color(face.color.r, face.color.g, face.color.b, face.color.a)
 
-        let newZ: number = ((this.farPlane)/(this.farPlane - this.nearPlane)) + 1/fdc.depth *((-this.farPlane * this.nearPlane)/(this.farPlane - this.nearPlane))
+        let newZ: number = ((this.farPlane)/(this.farPlane - this.nearShade)) + 1/fdc.depth *((-this.farPlane * this.nearShade)/(this.farPlane - this.nearShade)) 
 
         if(isShaded){
-            newColor.r = face.color.r -(face.color.r * newZ);
-            newColor.g = face.color.g -(face.color.g * newZ);
-            newColor.b = face.color.b -(face.color.b * newZ);
+            
+            newColor.r = (1-newZ) *face.color.r + newZ * Color.background.r
+            newColor.g = (1-newZ) *face.color.g + newZ * Color.background.g
+            newColor.b = (1-newZ) *face.color.b + newZ * Color.background.b
         }
 
         ctx.fillStyle = newColor.rgbaString()
