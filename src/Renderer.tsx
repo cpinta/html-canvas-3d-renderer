@@ -149,7 +149,7 @@ export class Renderer{
                         let facingCamDot = avgWVertLocation.subtract(this.camera.getWPosition()).normalize().dotWith(face.normal)
                         
                         if(facingCamDot < 0){
-                            screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth))
+                            screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth, facingCamDot))
                         }
                     }
                 }
@@ -215,10 +215,12 @@ export class Renderer{
         let newZ: number = ((this.farPlane)/(this.farPlane - this.nearShade)) + 1/fdc.depth *((-this.farPlane * this.nearShade)/(this.farPlane - this.nearShade)) 
 
         if(isShaded){
-            
-            newColor.r = (1-newZ) *face.color.r + newZ * Color.background.r
-            newColor.g = (1-newZ) *face.color.g + newZ * Color.background.g
-            newColor.b = (1-newZ) *face.color.b + newZ * Color.background.b
+            newColor.r = face.color.r - ((1+fdc.dot) * 50)
+            newColor.g = face.color.g - ((1+fdc.dot) * 50)
+            newColor.b = face.color.b - ((1+fdc.dot) * 50)
+            // newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
+            // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
+            // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
         }
 
         ctx.fillStyle = newColor.rgbaString()
@@ -238,16 +240,18 @@ export class Renderer{
 export class FaceDepthStart {
     face: Face
     depth: number = -1
+    dot: number = -1
     vertStartIndex: number = 0
     isDebug: boolean
     debugText: string = ""
 
-    constructor(face: Face, vertStartIndex: number, depth: number, isDebug: boolean = false, debugText: string = ""){
+    constructor(face: Face, vertStartIndex: number, depth: number, dot:number, debugText: string = ""){
         this.face = face
         this.vertStartIndex = vertStartIndex
         this.depth = depth
+        this.dot = dot
         
-        this.isDebug = isDebug
+        this.isDebug = debugText != ""
         this.debugText = debugText
     }
 }
