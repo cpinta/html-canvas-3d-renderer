@@ -100,6 +100,8 @@ export class Color {
     static white = Color.fromHex('#FFFFFF')
     static black = Color.fromHex('#000000')
     
+    static background = this.lightBlue
+
     static exampleArray7 = [
         this.darkBlue,
         this.lightBlue,
