@@ -1,7 +1,6 @@
 import { Object3D, Vector3, Face, Mesh, Camera } from "./3D"
-import { Cube, Line, Plane } from "./Primitives"
 import { Color, Vector2 } from "./2D"
-import { identityMatrix4, MMath } from "./Matrix"
+import { MMath } from "./Matrix"
 import { inv } from "mathjs"
 import FileImport3D from "./FileImport3D"
 
@@ -142,10 +141,11 @@ export class Renderer{
                         let normalWVert = obj.getWVert(normalVert)
                         normalVert = this.worldVertToCamera(normalWVert)
 
-                        let facingCamDot = avgWVertLocation.subtract(this.camera.getWPosition()).normalize().dotWith(face.normal)
+                        let normalMultiplied: Vector3 = MMath.toVector3(MMath.multiply(obj.combinedMatrix, face.normal.toMatrix4())).normalize()
+                        let facingCamDot = avgWVertLocation.subtract(this.camera.getWPosition()).normalize().dotWith(normalMultiplied)
                         
                         if(facingCamDot < 0){
-                            screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth, facingCamDot))
+                            screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth, facingCamDot, this.truncate(facingCamDot, 2).toString()))
                         }
                     }
                 }
