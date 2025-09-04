@@ -170,11 +170,21 @@ export class Renderer{
             this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], true)
             facesDrawn++
         }
+        for(let i=0;i<screenSpaceFaces.length;i++){
+            this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], false, true, true)
+            // facesDrawn++
+        }
 
 
         ctx.fillStyle = '#00FF00'
         ctx.fillText(linesDrawn.toString(), 20, 20)
+        ctx.fillStyle = '#FF0000'
         ctx.fillText(facesDrawn.toString(), 20, 60)
+        ctx.fillStyle = '#00FF00'
+    }
+
+    truncate(num: number, trunc:number){
+        return Math.trunc(num*trunc*10)/(trunc*10)
     }
 
     objVertsToCamera(obj: Object3D){
@@ -196,39 +206,47 @@ export class Renderer{
         return vert
     }
 
-    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true){
-        ctx.beginPath()
+    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false){
         let face: Face = fdc.face
+        if(!onlyDebug){
+            ctx.beginPath()
 
-        for(let m=0;m<face.vertIndexes.length;m++){
-            let curInd: number = face.vertIndexes[m] + fdc.vertStartIndex
-            ctx.lineTo(screenSpaceVerts[curInd].x, screenSpaceVerts[curInd].y)
+            for(let m=0;m<face.vertIndexes.length;m++){
+                let curInd: number = face.vertIndexes[m] + fdc.vertStartIndex
+                ctx.lineTo(screenSpaceVerts[curInd].x, screenSpaceVerts[curInd].y)
+            }
+            ctx.lineTo(screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].x, screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].y)
+
+            let newColor: Color = new Color(face.color.r, face.color.g, face.color.b, face.color.a)
+
+            let newZ: number = ((this.farPlane)/(this.farPlane - this.nearShade)) + 1/fdc.depth *((-this.farPlane * this.nearShade)/(this.farPlane - this.nearShade)) 
+
+            if(isShaded){
+                newColor.r = face.color.r - ((fdc.dot/6) * 50)
+                newColor.g = face.color.g - ((fdc.dot/6) * 50)
+                newColor.b = face.color.b - ((fdc.dot/6) * 50)
+                // newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
+                // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
+                // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
+            }
+
+            ctx.fillStyle = newColor.rgbaString()
+            ctx.strokeStyle = newColor.rgbaString()
+
+            ctx.closePath()
+            ctx.stroke()
+            ctx.fill()
         }
-        ctx.lineTo(screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].x, screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].y)
 
-        let newColor: Color = new Color(face.color.r, face.color.g, face.color.b, face.color.a)
-
-        let newZ: number = ((this.farPlane)/(this.farPlane - this.nearShade)) + 1/fdc.depth *((-this.farPlane * this.nearShade)/(this.farPlane - this.nearShade)) 
-
-        if(isShaded){
-            newColor.r = face.color.r - ((1+fdc.dot) * 50)
-            newColor.g = face.color.g - ((1+fdc.dot) * 50)
-            newColor.b = face.color.b - ((1+fdc.dot) * 50)
-            // newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
-            // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
-            // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
-        }
-
-        ctx.fillStyle = newColor.rgbaString()
-        ctx.strokeStyle = newColor.rgbaString()
-
-        ctx.closePath()
-        ctx.stroke()
-        ctx.fill()
-
-        if(fdc.isDebug){
-            ctx.fillStyle = Color.lightPurple.toHex()
-            ctx.fillText(fdc.debugText, screenSpaceVerts[face.vertIndexes[face.vertIndexes.length-1] + fdc.vertStartIndex].x, screenSpaceVerts[face.vertIndexes[face.vertIndexes.length-1] + fdc.vertStartIndex].y)
+        if(fdc.isDebug && drawDebug){
+            ctx.fillStyle = Color.white.toHex()
+            let avgV3: Vector3 = Vector3.zero()
+            for(let i=0;i<face.vertIndexes.length;i++){
+                let curInd: number = face.vertIndexes[i] + fdc.vertStartIndex
+                avgV3 = avgV3.add(screenSpaceVerts[curInd])
+            }
+            avgV3 = avgV3.divide(face.vertIndexes.length)
+            ctx.fillText(fdc.debugText, avgV3.x, avgV3.y)
         }
     }
 }
