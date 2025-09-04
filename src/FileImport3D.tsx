@@ -21,7 +21,7 @@ class FileImport3D{
                     verts.push(new Vector3(-Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
                     break
                 case "vn":
-                    vertNormals.push(new Vector3(Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
+                    vertNormals.push(new Vector3(-Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
                     break
                 case "f":
                     let face: number[] = []
