@@ -12,6 +12,12 @@ export class Vector2 {
         this.y *= num
         return this
     }
+
+    add(vector:Vector2){
+        this.x += vector.x
+        this.y += vector.y
+        return this
+    }
     
     setZero(){
         this.x = 0
