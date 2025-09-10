@@ -1,5 +1,5 @@
 
-import { Color, Vector2 } from "./2D";
+import { Color, General, Vector2 } from "./2D";
 import { identityMatrix3, identityMatrix4, MMath } from "./Matrix"
 
 
@@ -240,6 +240,9 @@ export class Vector3 {
         }
     }
 
+    toVector2xy():Vector2{
+        return new Vector2(this.x, this.y)
+    }
     toMatrix3(): number[][]{
         return [[this.x],[this.y],[this.z]]
     }
@@ -292,5 +295,8 @@ export class Vector3 {
         newVector.y -= vector.y
         newVector.z -= vector.z
         return newVector
+    }
+    toString(){
+        return General.truncate(this.x, 2) + ", "+ General.truncate(this.y, 2) +", "+General.truncate(this.z, 2)
     }
 }

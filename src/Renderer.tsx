@@ -1,5 +1,5 @@
 import { Object3D, Vector3, Face, Mesh, Camera } from "./3D"
-import { Color, Vector2 } from "./2D"
+import { Color, General, Vector2 } from "./2D"
 import { MMath } from "./Matrix"
 import { inv } from "mathjs"
 import FileImport3D from "./FileImport3D"
@@ -16,21 +16,24 @@ export class Renderer{
     objects: Object3D[] = []
     fov: number = 360*2;
     scaleMultiplier: number = 1
-    dimensions: Vector2 = Vector2.zero()
+    renderDimensions: Vector2 = Vector2.zero()
+    screenDimensions: Vector2 = Vector2.zero()
 
     nearPlane: number = 0
     nearShade: number = 2
     farPlane: number = 4
 
-    
     colors: Color[] = []
+
+    mousePosition: Vector2 = Vector2.zero()
 
     constructor(){
         this.camera.resetRotation()
     }
 
     async setup(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
-        this.dimensions = new Vector2(ctx.canvas.width, ctx.canvas.height)
+        this.renderDimensions = new Vector2(ctx.canvas.width, ctx.canvas.height)
+        this.screenDimensions = new Vector2(window.innerWidth, window.innerHeight)
         this.scaleMultiplier = scaleMultiplier
 
         const island = await FileImport3D.ImportIsland();
@@ -73,8 +76,8 @@ export class Renderer{
         shortHorz *= this.scaleMultiplier
         shortVert *= this.scaleMultiplier
 
-        shortHorz += this.dimensions.x/2
-        shortVert += this.dimensions.y/2
+        shortHorz += this.renderDimensions.x/2
+        shortVert += this.renderDimensions.y/2
         
         return new Vector3(shortHorz, shortVert, vert.z)
     }
@@ -141,11 +144,12 @@ export class Renderer{
                         let normalWVert = obj.getWVert(normalVert)
                         normalVert = this.worldVertToCamera(normalWVert)
 
-                        let normalMultiplied: Vector3 = MMath.toVector3(MMath.multiply(obj.combinedMatrix, face.normal.toMatrix4())).normalize()
+                        let normalMultiplied: Vector3 = MMath.toVector3(MMath.multiply(obj.localMatrix, face.normal.toMatrix4()))
+                        normalMultiplied = MMath.toVector3(MMath.multiply(obj.worldMatrix, face.normal.toMatrix4())).normalize()
                         let facingCamDot = avgWVertLocation.subtract(this.camera.getWPosition()).normalize().dotWith(normalMultiplied)
                         
                         if(facingCamDot < 0){
-                            screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth, facingCamDot, this.truncate(facingCamDot, 2).toString()))
+                            screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth, facingCamDot, General.truncate(facingCamDot, 2).toString()))
                         }
                     }
                 }
@@ -171,7 +175,7 @@ export class Renderer{
             facesDrawn++
         }
         for(let i=0;i<screenSpaceFaces.length;i++){
-            this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], false, true, true)
+            // this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], false, true, true)
             // facesDrawn++
         }
 
@@ -180,11 +184,11 @@ export class Renderer{
         ctx.fillText(linesDrawn.toString(), 20, 20)
         ctx.fillStyle = '#FF0000'
         ctx.fillText(facesDrawn.toString(), 20, 60)
+        ctx.fillStyle = '#FFFF00'
+        ctx.fillText(this.screenSpaceMousePosition().toString(), 20, 120)
+        ctx.fillText(this.mousePosition.toString(), 20, 140)
+        ctx.fillText(this.renderDimensions.toString(), 20, 160)
         ctx.fillStyle = '#00FF00'
-    }
-
-    truncate(num: number, trunc:number){
-        return Math.trunc(num*trunc*10)/(trunc*10)
     }
 
     objVertsToCamera(obj: Object3D){
@@ -229,6 +233,11 @@ export class Renderer{
                 // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
                 // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
             }
+            if(fdc.face.vertIndexes.length == 3){
+                if(Vector2.pointInTriangle(screenSpaceVerts[fdc.face.vertIndexes[0] + fdc.vertStartIndex].toVector2xy(), screenSpaceVerts[fdc.face.vertIndexes[1] + fdc.vertStartIndex].toVector2xy(), screenSpaceVerts[fdc.face.vertIndexes[2] + fdc.vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
+                    newColor = Color.orangeJuiceOrange;
+                }
+            }
 
             ctx.fillStyle = newColor.rgbaString()
             ctx.strokeStyle = newColor.rgbaString()
@@ -248,6 +257,10 @@ export class Renderer{
             avgV3 = avgV3.divide(face.vertIndexes.length)
             ctx.fillText(fdc.debugText, avgV3.x, avgV3.y)
         }
+    }
+
+    screenSpaceMousePosition(){
+        return new Vector2( this.mousePosition.x*(this.renderDimensions.x/this.screenDimensions.x) , this.mousePosition.y* (this.renderDimensions.y/this.screenDimensions.y) )
     }
 }
 

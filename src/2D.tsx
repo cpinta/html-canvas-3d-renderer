@@ -29,6 +29,34 @@ export class Vector2 {
     static zero(){
         return new Vector2(0, 0)
     }
+
+    static pointInTriangle(a: Vector2, b: Vector2, c: Vector2, p:Vector2){
+        let wOne: number = Vector2.w1(a,b,c,p)
+        let wTwo: number = Vector2.w2(a,b,c,p)
+
+        if(wOne >= 0 && wTwo >= 0 && (wOne + wTwo) <= 1){
+            return true
+        }
+        return false
+    }
+
+    static w1(a: Vector2, b: Vector2, c: Vector2, p:Vector2){
+        return (a.x*(c.y-a.y)+(p.y-a.y)*(c.x-a.x)-p.x*(c.y-a.y))/((b.y-a.y)*(c.x-a.x)-(b.x-a.x)*(c.y-a.y))
+    }
+
+    static w2(a: Vector2, b: Vector2, c: Vector2, p:Vector2){
+        return (p.y-a.y-this.w1(a,b,c,p)*(b.y-a.y))/(c.y-a.y)
+    }
+
+    toString(){
+        return General.truncate(this.x, 2) + ", "+ General.truncate(this.y, 2)
+    }
+}
+
+export class General{
+    static truncate(num: number, trunc:number){
+        return Math.trunc(num*trunc*10)/(trunc*10)
+    }
 }
 
 export class Color {

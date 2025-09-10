@@ -82,6 +82,8 @@ const Canvas = (props : CanvasProps) => {
                     renderer.current.objects[0].resetRotation()
                     renderer.current.objects[0].wRotate(new Vector3((mouseVec.y/window.innerHeight-0.5)*objectRotationSpeed.y, (mouseVec.x/window.innerWidth-0.5)*objectRotationSpeed.x,0))
 
+                    renderer.current.mousePosition = input.current.mouseVector;
+
                     // renderer.current.camera.wMovePosition(new Vector3(input.current.moveVector.x, input.current.moveVector.z, input.current.moveVector.y).multiply(deltaTime * moveVelocity))
                     renderer.current.draw(rendererProps.current)
 
@@ -170,7 +172,7 @@ const Canvas = (props : CanvasProps) => {
 
     return(
         <>
-            <canvas ref={canvasRef} {...props} style={{width:100+`%`, height:'99dvh', imageRendering: 'pixelated'}} />
+            <canvas ref={canvasRef} {...props} style={{width:100+`%`, height:'100dvh', imageRendering: 'pixelated'}} />
             <input ref={fileRef} type='file' onChange={openFilePicker} style={{display:'none'}} />
         </>
     );
