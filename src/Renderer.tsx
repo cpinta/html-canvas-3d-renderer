@@ -170,10 +170,26 @@ export class Renderer{
             }
         )
 
+
+        let mousePosTriIndex: number = -1
+        let mousePosTriDepth: number = 20
         for(let i=0;i<screenSpaceFaces.length;i++){
             this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], true)
             facesDrawn++
+            
+            if(screenSpaceFaces[i].face.vertIndexes.length == 3){
+                if(Vector2.pointInTriangle(worldScreenSpaceVerts[screenSpaceFaces[i].face.vertIndexes[0] + screenSpaceFaces[i].vertStartIndex].toVector2xy(), worldScreenSpaceVerts[screenSpaceFaces[i].face.vertIndexes[1] + screenSpaceFaces[i].vertStartIndex].toVector2xy(), worldScreenSpaceVerts[screenSpaceFaces[i].face.vertIndexes[2] + screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
+                    if(mousePosTriDepth > screenSpaceFaces[i].depth){
+                        mousePosTriIndex = i
+                        mousePosTriDepth = screenSpaceFaces[i].depth
+                    }
+                }
+            }
         }
+        if(mousePosTriIndex != -1){
+            this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[mousePosTriIndex], false, false, false, Color.white)
+        }
+        
         for(let i=0;i<screenSpaceFaces.length;i++){
             // this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], false, true, true)
             // facesDrawn++
@@ -210,7 +226,7 @@ export class Renderer{
         return vert
     }
 
-    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false){
+    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
         let face: Face = fdc.face
         if(!onlyDebug){
             ctx.beginPath()
@@ -223,7 +239,11 @@ export class Renderer{
 
             let newColor: Color = new Color(face.color.r, face.color.g, face.color.b, face.color.a)
 
-            let newZ: number = ((this.farPlane)/(this.farPlane - this.nearShade)) + 1/fdc.depth *((-this.farPlane * this.nearShade)/(this.farPlane - this.nearShade)) 
+            let newZ: number = ((this.farPlane)/(this.farPlane - this.nearShade)) + 1/fdc.depth *((-this.farPlane * this.nearShade)/(this.farPlane - this.nearShade))
+
+            if(overrideColor){
+                newColor = overrideColor
+            }
 
             if(isShaded){
                 newColor.r = face.color.r - ((fdc.dot/6) * 50)
@@ -232,11 +252,6 @@ export class Renderer{
                 // newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
                 // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
                 // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
-            }
-            if(fdc.face.vertIndexes.length == 3){
-                if(Vector2.pointInTriangle(screenSpaceVerts[fdc.face.vertIndexes[0] + fdc.vertStartIndex].toVector2xy(), screenSpaceVerts[fdc.face.vertIndexes[1] + fdc.vertStartIndex].toVector2xy(), screenSpaceVerts[fdc.face.vertIndexes[2] + fdc.vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
-                    newColor = Color.orangeJuiceOrange;
-                }
             }
 
             ctx.fillStyle = newColor.rgbaString()
