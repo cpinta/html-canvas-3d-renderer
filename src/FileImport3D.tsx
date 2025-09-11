@@ -11,7 +11,14 @@ class FileImport3D{
         let vertNormals: Vector3[] = []
         let currentColor: Color = Color.hotPink
 
-        let list: string[] = fileContent.split("\n")
+        let list: string[]
+        if(fileContent.includes("\r\n")){
+            list = fileContent.split("\r\n")
+        }
+        else{
+            list = fileContent.split("\n")
+        }
+
         for(let i=0;i<list.length;i++){
             let args: string[] = list[i].split(" ")
             switch(args[0]){
@@ -21,10 +28,8 @@ class FileImport3D{
                         objs.push(new Object3D(mesh, objName))
                     }
                     objName = args[1]
-                    // faces = []
-                    // verts = []
-                    // facesObjs = []
-                    // vertNormals = []
+                    faces = []
+                    facesObjs = []
                     break
                 case "v":
                     verts.push(new Vector3(-Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
@@ -40,7 +45,12 @@ class FileImport3D{
                         face.push(Number.parseInt(vertInds[0]) - 1)
                         vn.push(Number.parseInt(vertInds[2]) - 1)
                     }
-                    facesObjs.push(new Face(face, currentColor, new Vector3(vertNormals[vn[0]].x, vertNormals[vn[0]].y, vertNormals[vn[0]].z)))
+                    try{
+                        facesObjs.push(new Face(face, currentColor, new Vector3(vertNormals[vn[0]].x, vertNormals[vn[0]].y, vertNormals[vn[0]].z)))
+                    }
+                    catch(ex: any){
+                        console.log("bruh")
+                    }
                     break
                 case "#":
                     break
