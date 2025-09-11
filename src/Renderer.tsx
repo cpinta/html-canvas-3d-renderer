@@ -13,11 +13,11 @@ export type RendererProps = {
 export class Renderer{
     
     camera: Camera = new Camera()
-    objects: Object3D[] = []
     fov: number = 360*2;
     scaleMultiplier: number = 1
     renderDimensions: Vector2 = Vector2.zero()
     screenDimensions: Vector2 = Vector2.zero()
+    fi: FrameInfo
 
     nearPlane: number = 0
     nearShade: number = 2
@@ -29,17 +29,7 @@ export class Renderer{
 
     constructor(){
         this.camera.resetRotation()
-    }
-
-    async setup(ctx: CanvasRenderingContext2D, scaleMultiplier: number){
-        this.renderDimensions = new Vector2(ctx.canvas.width, ctx.canvas.height)
-        this.screenDimensions = new Vector2(window.innerWidth, window.innerHeight)
-        this.scaleMultiplier = scaleMultiplier
-
-        const island = await FileImport3D.ImportIsland();
-        if(this.objects.length == 0){
-            this.objects.push(island);
-        }
+        this.fi = new FrameInfo(this.farPlane)
     }
 
     displayMatrix(ctx: CanvasRenderingContext2D, mat:number[][], offset: Vector2){
@@ -50,8 +40,9 @@ export class Renderer{
         }
     }
     
-    draw(props: RendererProps){
-        this.drawMeshes(props.ctx)
+    draw(props: RendererProps, objects: Object3D[]){
+        this.fi = new FrameInfo(this.farPlane)
+        this.drawMeshes(props.ctx, objects)
 
         this.displayMatrix(props.ctx, this.camera.localMatrix, new Vector2(40, 20))
         this.displayMatrix(props.ctx, this.camera.worldMatrix, new Vector2(200, 20))
@@ -59,8 +50,8 @@ export class Renderer{
         this.displayMatrix(props.ctx, this.camera.getFwdVector().toMatrix3(), new Vector2(580, 20))
     }
 
-    setObj(obj: Object3D){
-        // this.objects.push(obj)
+    setObjs(objs: Object3D[]){
+        // objects.push(obj)
         // obj.wMovePosition(new Vector3(10,1,0))
     }
 
@@ -82,15 +73,12 @@ export class Renderer{
         return new Vector3(shortHorz, shortVert, vert.z)
     }
 
-    drawMeshes(ctx: CanvasRenderingContext2D){
+    drawMeshes(ctx: CanvasRenderingContext2D, objects: Object3D[]){
         let linesDrawn = 0
         let facesDrawn = 0
-
-        let worldScreenSpaceVerts: Vector3[] = [] 
-        let screenSpaceFaces: FaceDepthStart[] = []
         
-        for(let j=0;j<this.objects.length;j++){
-            let obj: Object3D = this.objects[j]
+        for(let j=0;j<objects.length;j++){
+            let obj: Object3D = objects[j]
             let mesh: Mesh = obj.mesh
             let localScreenSpaceVerts: Vector3[] = [] 
 
@@ -149,48 +137,42 @@ export class Renderer{
                         let facingCamDot = avgWVertLocation.subtract(this.camera.getWPosition()).normalize().dotWith(normalMultiplied)
                         
                         if(facingCamDot < 0){
-                            screenSpaceFaces.push(new FaceDepthStart(face, worldScreenSpaceVerts.length, averageDepth, facingCamDot, General.truncate(facingCamDot, 2).toString()))
+                            this.fi.screenSpaceFaces.push(new FaceDepthStart(face, this.fi.worldScreenSpaceVerts.length, averageDepth, facingCamDot, General.truncate(facingCamDot, 2).toString()))
                         }
                     }
                 }
             }
 
-            worldScreenSpaceVerts = worldScreenSpaceVerts.concat(localScreenSpaceVerts)
+            this.fi.worldScreenSpaceVerts = this.fi.worldScreenSpaceVerts.concat(localScreenSpaceVerts)
         }
 
-        for(let j=0;j<this.objects.length;j++){
-            let obj: Object3D = this.objects[j]
+        for(let j=0;j<objects.length;j++){
+            let obj: Object3D = objects[j]
             let mesh: Mesh = obj.mesh
 
         }
 
-        screenSpaceFaces.sort(
+        this.fi.screenSpaceFaces.sort(
             function(a, b){
                 return b.depth - a.depth
             }
         )
 
-
-        let mousePosTriIndex: number = -1
-        let mousePosTriDepth: number = 20
-        for(let i=0;i<screenSpaceFaces.length;i++){
-            this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], true)
+        for(let i=0;i<this.fi.screenSpaceFaces.length;i++){
+            this.drawPolygon(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
             facesDrawn++
             
-            if(screenSpaceFaces[i].face.vertIndexes.length == 3){
-                if(Vector2.pointInTriangle(worldScreenSpaceVerts[screenSpaceFaces[i].face.vertIndexes[0] + screenSpaceFaces[i].vertStartIndex].toVector2xy(), worldScreenSpaceVerts[screenSpaceFaces[i].face.vertIndexes[1] + screenSpaceFaces[i].vertStartIndex].toVector2xy(), worldScreenSpaceVerts[screenSpaceFaces[i].face.vertIndexes[2] + screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
-                    if(mousePosTriDepth > screenSpaceFaces[i].depth){
-                        mousePosTriIndex = i
-                        mousePosTriDepth = screenSpaceFaces[i].depth
+            if(this.fi.screenSpaceFaces[i].face.vertIndexes.length == 3){
+                if(Vector2.pointInTriangle(this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[0] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[1] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[2] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
+                    if(this.fi.mouseHoverPosTriDepth > this.fi.screenSpaceFaces[i].depth){
+                        this.fi.mouseHoverPosTriIndex = i
+                        this.fi.mouseHoverPosTriDepth = this.fi.screenSpaceFaces[i].depth
                     }
                 }
             }
         }
-        if(mousePosTriIndex != -1){
-            this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[mousePosTriIndex], false, false, false, Color.white)
-        }
         
-        for(let i=0;i<screenSpaceFaces.length;i++){
+        for(let i=0;i<this.fi.screenSpaceFaces.length;i++){
             // this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], false, true, true)
             // facesDrawn++
         }
@@ -274,8 +256,26 @@ export class Renderer{
         }
     }
 
+    clear(ctx: CanvasRenderingContext2D){
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.fillStyle = Color.background.toHex()
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    }
+
     screenSpaceMousePosition(){
         return new Vector2( this.mousePosition.x*(this.renderDimensions.x/this.screenDimensions.x) , this.mousePosition.y* (this.renderDimensions.y/this.screenDimensions.y) )
+    }
+}
+
+export class FrameInfo{
+    worldScreenSpaceVerts: Vector3[] = [] 
+    screenSpaceFaces: FaceDepthStart[] = []
+    
+    mouseHoverPosTriDepth: number = 20
+    mouseHoverPosTriIndex: number = -1
+
+    constructor(farPlane: number){
+        this.mouseHoverPosTriDepth = farPlane
     }
 }
 

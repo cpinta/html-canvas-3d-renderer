@@ -66,6 +66,7 @@ export class InputManager {
 
             this.mouseDiffVector.x += e.movementX
             this.mouseDiffVector.y += e.movementY
+            console.log(this.mouseVector.toString())
         })
 
         window.addEventListener('wheel', (e) => {

@@ -4,6 +4,7 @@ import { Face, Mesh, Object3D, Vector3 } from "./3D"
 class FileImport3D{
     static OBJ_Import(fileContent: string, color: Color){
         let objName: string = ""
+        let objs: Object3D[] = []
         let verts: Vector3[] = []
         let faces: number[][] = []
         let facesObjs: Face[] = []
@@ -15,7 +16,15 @@ class FileImport3D{
             let args: string[] = list[i].split(" ")
             switch(args[0]){
                 case "o":
+                    if (objName != ""){
+                        let mesh = new Mesh(verts, facesObjs)
+                        objs.push(new Object3D(mesh, objName))
+                    }
                     objName = args[1]
+                    // faces = []
+                    // verts = []
+                    // facesObjs = []
+                    // vertNormals = []
                     break
                 case "v":
                     verts.push(new Vector3(-Number.parseFloat(args[1]), Number.parseFloat(args[2]), Number.parseFloat(args[3])))
@@ -31,7 +40,6 @@ class FileImport3D{
                         face.push(Number.parseInt(vertInds[0]) - 1)
                         vn.push(Number.parseInt(vertInds[2]) - 1)
                     }
-                    faces.push(face)
                     facesObjs.push(new Face(face, currentColor, new Vector3(vertNormals[vn[0]].x, vertNormals[vn[0]].y, vertNormals[vn[0]].z)))
                     break
                 case "#":
@@ -52,7 +60,8 @@ class FileImport3D{
 
         let mesh = new Mesh(verts, facesObjs)
         let obj = new Object3D(mesh, objName)
-        return obj
+        objs.push(obj)
+        return objs
     }
 
     static GITF_Import(fileContent: string){
