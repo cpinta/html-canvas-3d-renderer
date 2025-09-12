@@ -12,6 +12,9 @@ export class Transform3D{
     getWPosition(){
         return new Vector3(this.worldMatrix[0][3], this.worldMatrix[1][3], this.worldMatrix[2][3]);
     }
+    getLPosition(){
+        return new Vector3(this.localMatrix[0][3], this.localMatrix[1][3], this.localMatrix[2][3]);
+    }
     
     wRotate(rotation: Vector3){
         if(rotation.isZero()){
@@ -56,15 +59,15 @@ export class Transform3D{
     }
 
     getCombinedMatrix(){
-        this.combinedMatrix = MMath.multiply(this.localMatrix, this.worldMatrix)
-        this.isCombined = true
+        if(!this.isCombined){
+            this.combinedMatrix = MMath.multiply(this.localMatrix, this.worldMatrix)
+            this.isCombined = true
+        }
+        return this.combinedMatrix
     }
 
     getFwdVector(){
-        if(!this.isCombined){
-            this.getCombinedMatrix()
-        }
-        return new Vector3(this.combinedMatrix[0][2], this.combinedMatrix[1][2], this.combinedMatrix[2][2])
+        return new Vector3(this.getCombinedMatrix()[0][2], this.getCombinedMatrix()[1][2], this.getCombinedMatrix()[2][2])
     }
 
     matrixChanged(){
