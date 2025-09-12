@@ -140,6 +140,10 @@ export class Object3D extends Transform3D{
     getLVert(vert: Vector3): Vector3{
         return MMath.toVector3(MMath.multiply(this.localMatrix, vert.toMatrix4()))
     }
+
+    tick(deltaTime:number){
+
+    }
 }
 
 export class Mesh {

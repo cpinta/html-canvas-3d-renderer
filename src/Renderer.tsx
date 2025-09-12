@@ -20,7 +20,7 @@ export class Renderer{
     fi: FrameInfo
 
     nearPlane: number = 0
-    nearShade: number = 2
+    nearShade: number = 3
     farPlane: number = 4
 
     colors: Color[] = []
@@ -228,9 +228,9 @@ export class Renderer{
             }
 
             if(isShaded){
-                newColor.r = face.color.r - ((fdc.dot/6) * 50)
-                newColor.g = face.color.g - ((fdc.dot/6) * 50)
-                newColor.b = face.color.b - ((fdc.dot/6) * 50)
+                newColor.r = face.color.r - ((fdc.dot/6) * 500)
+                newColor.g = face.color.g - ((fdc.dot/6) * 500)
+                newColor.b = face.color.b - ((fdc.dot/6) * 500)
                 // newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
                 // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
                 // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b

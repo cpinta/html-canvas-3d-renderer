@@ -11,7 +11,7 @@ class FileImport3D{
         let vertNormals: Vector3[] = []
         let currentColor: Color = Color.hotPink
 
-        let list: string[]
+        let list: string[] = []
         if(fileContent.includes("\r\n")){
             list = fileContent.split("\r\n")
         }

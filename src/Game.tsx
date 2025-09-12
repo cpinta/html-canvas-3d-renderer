@@ -56,8 +56,11 @@ export class Game{
         this.objects.push(obj)
     }
     
+    prevObj: Object3D | null = null
+
     tick(ctx: CanvasRenderingContext2D, deltaTime: number){
         let mouseVec: Vector2 = this.input.mouseVector
+        let MAX_HOVER_AMOUNT: number = 0.5
         
         this.renderer.camera.resetRotation()
         this.renderer.camera.camRotate(new Vector2((mouseVec.x/window.innerWidth-0.5)*this.camRotationSpeed.x, (mouseVec.y/window.innerHeight-0.5)*this.camRotationSpeed.y))
@@ -68,7 +71,25 @@ export class Game{
         this.renderer.draw({ctx:ctx, deltaTime: 0, frameCount: this.frameCount}, this.objects)
         if(this.prevFrameInfo().mouseHoverPosTriIndex != -1){
             this.renderer.drawPolygon(ctx, this.prevFrameInfo().worldScreenSpaceVerts, this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex], false, false, false, Color.white)
-            this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex].face.mesh.obj?.lMovePosition(new Vector3(0,5*deltaTime, 0))
+            let curObj: Object3D = this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex].face.mesh.obj!
+            if(curObj.getLPosition().y < MAX_HOVER_AMOUNT){
+                curObj.lMovePosition(new Vector3(0,1*deltaTime, 0))
+            }
+            else{
+                curObj.lSetPosition(new Vector3(0,MAX_HOVER_AMOUNT, 0))
+            }
+            if(this.prevObj){
+                if(this.prevObj != curObj){
+                    this.prevObj.lSetPosition(new Vector3(0,0,0))
+                }
+            }
+            this.prevObj = curObj
+        }
+        else{
+            if(this.prevObj){
+                this.prevObj.lSetPosition(new Vector3(0,0,0))
+                this.prevObj = null
+            }
         }
         
         ctx.fillText(this.fps.toString(), 20, 100)
