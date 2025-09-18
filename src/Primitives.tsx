@@ -29,7 +29,7 @@ export class Cube extends Object3D {
         
         super(mesh);
 
-        this.wMovePosition(origin)
+        this.moveWPosition(origin)
     }
 }
 
@@ -52,7 +52,7 @@ export class Plane extends Object3D {
 
         super(mesh);
         
-        this.wMovePosition(origin)
+        this.moveWPosition(origin)
     }
 }
 

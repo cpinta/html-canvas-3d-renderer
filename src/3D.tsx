@@ -15,8 +15,14 @@ export class Transform3D{
     getLPosition(){
         return new Vector3(this.localMatrix[0][3], this.localMatrix[1][3], this.localMatrix[2][3]);
     }
+    getWScale(){
+        return new Vector3(this.worldMatrix[3][0], this.worldMatrix[3][1], this.worldMatrix[3][2])
+    }
+    getLScale(){
+        return new Vector3(this.localMatrix[3][0], this.localMatrix[3][1], this.localMatrix[3][2])
+    }
     
-    wRotate(rotation: Vector3){
+    RotateW(rotation: Vector3){
         if(rotation.isZero()){
             return
         }
@@ -24,12 +30,12 @@ export class Transform3D{
         this.matrixChanged()
     }
 
-    wSetPosition(position: Vector3){
+    setWPosition(position: Vector3){
         this.worldMatrix = MMath.setPosition(this.worldMatrix, position)
         this.matrixChanged()
     }
 
-    wMovePosition(position: Vector3){
+    moveWPosition(position: Vector3){
         if(position.isZero()){
             return
         }
@@ -37,7 +43,7 @@ export class Transform3D{
         this.matrixChanged()
     }
     
-    lRotate(rotation: Vector3){
+    RotateL(rotation: Vector3){
         if(rotation.isZero()){
             return
         }
@@ -45,12 +51,12 @@ export class Transform3D{
         this.matrixChanged()
     }
 
-    lSetPosition(position: Vector3){
+    setLPosition(position: Vector3){
         this.localMatrix = MMath.setPosition(this.localMatrix, position)
         this.matrixChanged()
     }
 
-    lMovePosition(position: Vector3){
+    moveLPosition(position: Vector3){
         if(position.isZero()){
             return
         }
@@ -83,12 +89,12 @@ export class Transform3D{
 
 export class Camera extends Transform3D{
     camRotate(rotate:Vector2){
-        this.lRotate(new Vector3(-rotate.y, 0, 0))
-        this.wRotate(new Vector3(0, rotate.x, 0))
+        this.RotateL(new Vector3(-rotate.y, 0, 0))
+        this.RotateW(new Vector3(0, rotate.x, 0))
     }
     resetRotation(): void {
         super.resetRotation()
-        this.wMovePosition(new Vector3(0, 2.45*1.6, 4.1*1.6))
+        this.moveWPosition(new Vector3(0, 2.45*1.6, 4.1*1.6))
         this.camRotate(new Vector2(-Math.PI,0.5))
     }
 }

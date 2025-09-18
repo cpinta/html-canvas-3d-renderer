@@ -25,22 +25,22 @@ export class MouseInteractableObject extends Object3D{
 }
 
 export class HoveringObject extends MouseInteractableObject{
-    MAX_HOVER_AMOUNT: number = 0.5
+    MAX_HOVER_SCALE: number = 0.5
     
     tick(deltaTime:number){
         super.tick(deltaTime)
         if(this.mouseIsHovering){
-            if(this.getLPosition().y < this.MAX_HOVER_AMOUNT){
-                this.lMovePosition(new Vector3(0,1*deltaTime, 0))
+            if(this.getLPosition().y < this.MAX_HOVER_SCALE){
+                this.moveLPosition(new Vector3(0,1*deltaTime, 0))
             }
             else{
-                this.lSetPosition(new Vector3(0,this.MAX_HOVER_AMOUNT, 0))
+                this.setLPosition(new Vector3(0,this.MAX_HOVER_SCALE, 0))
             }
         }
     }
 
     eventMouseEndHover(){
         super.eventMouseEndHover()
-        this.lSetPosition(new Vector3(0, 0, 0))
+        this.setLPosition(new Vector3(0, 0, 0))
     }
 }
