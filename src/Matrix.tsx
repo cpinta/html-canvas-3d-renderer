@@ -41,6 +41,23 @@ export class MMath {
         return MMath.multiply(matrix, idMatrix);
     }
 
+    static scale(matrix: number[][], offset: Vector3){
+        let idMatrix = structuredClone(identityMatrix4)
+        idMatrix[0][0] = offset.x;
+        idMatrix[1][1] = offset.y;
+        idMatrix[2][2] = offset.z;
+        // idMatrix[3][3] = 1;
+        return MMath.addsub(matrix, idMatrix, true);
+    }
+    
+    static setScale(matrix: number[][], offset: Vector3){
+        matrix[0][0] = offset.x;
+        matrix[1][1] = offset.y;
+        matrix[2][2] = offset.z;
+        // matrix[3][3] = 1;
+        return matrix
+    }
+
     static setPosition(matrix: number[][], position: Vector3){
         matrix[0][3] = position.x;
         matrix[1][3] = position.y;

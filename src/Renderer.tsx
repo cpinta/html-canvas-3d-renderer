@@ -2,7 +2,6 @@ import { Object3D, Vector3, Face, Mesh, Camera } from "./3D"
 import { Color, General, Vector2 } from "./2D"
 import { MMath } from "./Matrix"
 import { inv } from "mathjs"
-import FileImport3D from "./FileImport3D"
 
 export type RendererProps = {
     ctx: CanvasRenderingContext2D,
@@ -48,6 +47,9 @@ export class Renderer{
         this.displayMatrix(props.ctx, this.camera.worldMatrix, new Vector2(200, 20))
         this.displayMatrix(props.ctx, this.camera.combinedMatrix, new Vector2(360, 20))
         this.displayMatrix(props.ctx, this.camera.getFwdVector().toMatrix3(), new Vector2(580, 20))
+        if(objects.length > 0){
+            this.displayMatrix(props.ctx, objects[0].localMatrix, new Vector2(200, 100))
+        }
     }
 
     setObjs(objs: Object3D[]){

@@ -16,10 +16,10 @@ export class Transform3D{
         return new Vector3(this.localMatrix[0][3], this.localMatrix[1][3], this.localMatrix[2][3]);
     }
     getWScale(){
-        return new Vector3(this.worldMatrix[3][0], this.worldMatrix[3][1], this.worldMatrix[3][2])
+        return new Vector3(this.worldMatrix[0][0], this.worldMatrix[1][1], this.worldMatrix[2][2])
     }
     getLScale(){
-        return new Vector3(this.localMatrix[3][0], this.localMatrix[3][1], this.localMatrix[3][2])
+        return new Vector3(this.localMatrix[0][0], this.localMatrix[1][1], this.localMatrix[2][2])
     }
     
     RotateW(rotation: Vector3){
@@ -61,6 +61,19 @@ export class Transform3D{
             return
         }
         this.localMatrix = MMath.move(this.localMatrix, position)
+        this.matrixChanged()
+    }
+
+    scaleL(scale: Vector3){
+        if(scale.isZero()){
+            return
+        }
+        this.localMatrix = MMath.scale(this.localMatrix, scale)
+        this.matrixChanged()
+    }
+
+    setLScale(scale: Vector3){
+        this.localMatrix = MMath.setScale(this.localMatrix, scale)
         this.matrixChanged()
     }
 
