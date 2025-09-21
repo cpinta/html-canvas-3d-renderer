@@ -1,4 +1,4 @@
-import { Object3D, Vector3, Face, Mesh, Camera } from "./3D"
+import { Object3D, Vector3, Face, Mesh, Camera, Billboard } from "./3D"
 import { Color, General, Vector2 } from "./2D"
 import { MMath } from "./Matrix"
 import { inv } from "mathjs"
@@ -213,6 +213,13 @@ export class Renderer{
     drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
         let face: Face = fdc.face
         if(!onlyDebug){
+            if(face.mesh.obj instanceof Billboard){
+                let billboard: Billboard = face.mesh.obj
+                let offset: Vector2 = new Vector2(screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].x + billboard.sprite.width/2, screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].y + billboard.sprite.height/2)
+                ctx.drawImage(billboard.sprite, offset.x, offset.y)
+                return
+            }
+
             ctx.beginPath()
 
             for(let m=0;m<face.vertIndexes.length;m++){

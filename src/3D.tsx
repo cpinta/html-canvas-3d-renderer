@@ -1,6 +1,6 @@
 
 import { Color, General, Vector2 } from "./2D";
-import { identityMatrix3, identityMatrix4, MMath } from "./Matrix"
+import { identityMatrix4, MMath } from "./Matrix"
 
 
 export class Transform3D{
@@ -162,6 +162,18 @@ export class Object3D extends Transform3D{
 
     tick(deltaTime:number){
 
+    }
+}
+
+export class Billboard extends Object3D {
+    sprite: ImageBitmap
+
+    constructor(sprite: ImageBitmap, name: string){
+        let verts: Vector3[] = [new Vector3(0,0,0)]
+        let faces: Face[] = [new Face([0])]
+        super(new Mesh(verts, faces), name)
+
+        this.sprite = sprite
     }
 }
 

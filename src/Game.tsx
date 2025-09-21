@@ -1,5 +1,5 @@
 import { Color, Vector2 } from "./2D"
-import { Object3D } from "./3D"
+import { Billboard, Object3D } from "./3D"
 import FileImport3D from "./FileImport3D"
 import { InputManager } from "./InputManager"
 import { FrameInfo, Renderer } from "./Renderer"
@@ -39,11 +39,16 @@ export class Game{
         this.renderer.scaleMultiplier = scaleMultiplier
 
         const islandObjs: Object3D[] = await FileImport3D.ImportIsland();
+        const bmpCloud: ImageBitmap = await FileImport3D.ImportCloudPNG()
         if(this.objects.length == 0){
             for(let i=0;i<islandObjs.length;i++){
                 this.addObject(new HoveringObject(islandObjs[i].mesh, islandObjs[i].name))
             }
+            let cloud = new Billboard(bmpCloud, "cloud")
+            this.addObject(cloud)
         }
+
+
     }
 
     addObject(obj: Object3D){

@@ -73,15 +73,23 @@ class FileImport3D{
         objs.push(obj)
         return objs
     }
-
-    static GITF_Import(fileContent: string){
-
-    }
     
     static async ImportIsland(){
         const response = await fetch('/3d renderer island.obj');
         const islandContent = await response.text();
         return FileImport3D.OBJ_Import(islandContent, Color.hotPink)
+    }
+
+    static async PNG_Import(filePath: string){
+        const response = await fetch(filePath);
+        const blob = await response.blob()
+        const bitmap = await createImageBitmap(blob)
+
+        return bitmap
+    }
+
+    static async ImportCloudPNG(){
+        return FileImport3D.PNG_Import('/cloud.png')
     }
 }
 
