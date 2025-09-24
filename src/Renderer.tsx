@@ -20,7 +20,7 @@ export class Renderer{
 
     nearPlane: number = 0
     nearShade: number = 3
-    farPlane: number = 4
+    farPlane: number = 10
 
     colors: Color[] = []
 
@@ -28,7 +28,7 @@ export class Renderer{
 
     constructor(){
         this.camera.resetRotation()
-        this.fi = new FrameInfo(this.farPlane)
+        this.fi = new FrameInfo(this.farPlane, 0)
     }
 
     displayMatrix(ctx: CanvasRenderingContext2D, mat:number[][], offset: Vector2){
@@ -40,7 +40,7 @@ export class Renderer{
     }
     
     draw(props: RendererProps, objects: Object3D[]){
-        this.fi = new FrameInfo(this.farPlane)
+        this.fi = new FrameInfo(this.farPlane, props.frameCount)
         this.drawMeshes(props.ctx, objects)
 
         this.displayMatrix(props.ctx, this.camera.localMatrix, new Vector2(40, 20))
@@ -216,7 +216,10 @@ export class Renderer{
             if(face.mesh.obj instanceof Billboard){
                 let billboard: Billboard = face.mesh.obj
                 let offset: Vector2 = new Vector2(screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].x + billboard.sprite.width/2, screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].y + billboard.sprite.height/2)
-                ctx.drawImage(billboard.sprite, offset.x, offset.y)
+                let scale: number = (this.farPlane - fdc.depth) / this.farPlane * billboard.scale
+                
+                ctx.drawImage(billboard.sprite, offset.x, offset.y, billboard.sprite.width * scale, billboard.sprite.height * scale)
+                console.log((this.farPlane - fdc.depth) / this.farPlane)
                 return
             }
 
@@ -283,7 +286,9 @@ export class FrameInfo{
     mouseHoverPosTriDepth: number = 20
     mouseHoverPosTriIndex: number = -1
 
-    constructor(farPlane: number){
+    frameCount: number = 0
+
+    constructor(farPlane: number, frameCount: number){
         this.mouseHoverPosTriDepth = farPlane
     }
 }

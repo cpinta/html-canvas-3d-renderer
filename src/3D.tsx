@@ -167,13 +167,15 @@ export class Object3D extends Transform3D{
 
 export class Billboard extends Object3D {
     sprite: ImageBitmap
+    scale: number
 
-    constructor(sprite: ImageBitmap, name: string){
+    constructor(sprite: ImageBitmap, scale:number, name: string){
         let verts: Vector3[] = [new Vector3(0,0,0)]
         let faces: Face[] = [new Face([0])]
         super(new Mesh(verts, faces), name)
 
         this.sprite = sprite
+        this.scale = scale
     }
 }
 

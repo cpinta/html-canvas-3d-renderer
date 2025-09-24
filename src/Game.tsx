@@ -1,9 +1,9 @@
 import { Color, Vector2 } from "./2D"
-import { Billboard, Object3D } from "./3D"
+import { Billboard, Object3D, Vector3 } from "./3D"
 import FileImport3D from "./FileImport3D"
 import { InputManager } from "./InputManager"
 import { FrameInfo, Renderer } from "./Renderer"
-import { HoveringObject, MouseInteractableObject } from "./Objects"
+import { CloudBillboard, HoveringObject, MouseInteractableObject } from "./Objects"
 
 export class Game{
     static instance: Game
@@ -44,7 +44,8 @@ export class Game{
             for(let i=0;i<islandObjs.length;i++){
                 this.addObject(new HoveringObject(islandObjs[i].mesh, islandObjs[i].name))
             }
-            let cloud = new Billboard(bmpCloud, "cloud")
+            let cloud = new CloudBillboard(bmpCloud, 1, "cloud")
+            cloud.moveWPosition(new Vector3(0, 1, 0))
             this.addObject(cloud)
         }
 

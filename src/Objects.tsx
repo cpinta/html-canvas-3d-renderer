@@ -1,4 +1,6 @@
-import { Object3D, Vector3 } from "./3D"
+import { Vector2 } from "./2D"
+import { Billboard, Camera, Object3D, Vector3 } from "./3D"
+import { Game } from "./Game"
 
 export class MouseInteractableObject extends Object3D{
     
@@ -53,5 +55,11 @@ export class HoveringObject extends MouseInteractableObject{
     eventMouseEndHover(){
         super.eventMouseEndHover()
         // this.setLScale(Vector3.one())
+    }
+}
+
+export class CloudBillboard extends Billboard {
+    tick(deltaTime: number){
+        this.moveWPosition(new Vector3(0,0,1).multiply(deltaTime))
     }
 }
