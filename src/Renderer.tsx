@@ -2,6 +2,7 @@ import { Object3D, Vector3, Face, Mesh, Camera, Billboard } from "./3D"
 import { Color, General, Vector2 } from "./2D"
 import { MMath } from "./Matrix"
 import { inv } from "mathjs"
+import { CameraController } from "./Objects"
 
 export type RendererProps = {
     ctx: CanvasRenderingContext2D,
@@ -11,7 +12,7 @@ export type RendererProps = {
 
 export class Renderer{
     
-    camera: Camera = new Camera()
+    camera: Camera = new CameraController()
     fov: number = 360*2;
     scaleMultiplier: number = 1
     renderDimensions: Vector2 = Vector2.zero()

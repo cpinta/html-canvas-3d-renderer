@@ -28,7 +28,7 @@ export class Game{
         this.renderer = new Renderer()
         this.input = new InputManager()
         
-        if(Game.instance != null){
+        if(Game.instance == null){
             Game.instance = this
         }
     }
@@ -68,8 +68,8 @@ export class Game{
     tick(ctx: CanvasRenderingContext2D, deltaTime: number){
         let mouseVec: Vector2 = this.input.mouseVector
         
-        this.renderer.camera.resetRotation()
-        this.renderer.camera.camRotate(new Vector2((mouseVec.x/window.innerWidth-0.5)*this.camRotationSpeed.x, (mouseVec.y/window.innerHeight-0.5)*this.camRotationSpeed.y))
+        // this.renderer.camera.resetRotation()
+        // this.renderer.camera.camRotate(new Vector2((mouseVec.x/window.innerWidth-0.5)*this.camRotationSpeed.x, (mouseVec.y/window.innerHeight-0.5)*this.camRotationSpeed.y))
 
         this.renderer.mousePosition = mouseVec;
 
@@ -105,6 +105,7 @@ export class Game{
         for(let i=0;i<this.objects.length;i++){
             this.objects[i].tick(deltaTime)
         }
+        this.renderer.camera.tick(deltaTime)
         
         ctx.fillText(this.fps.toString(), 20, 100)
         ctx.fillText(mouseVec.x.toString()+", "+mouseVec.y.toString(), 20, 200)

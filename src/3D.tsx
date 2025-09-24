@@ -98,6 +98,10 @@ export class Transform3D{
         this.worldMatrix = structuredClone(identityMatrix4)
         this.combinedMatrix = structuredClone(identityMatrix4)
     }
+    
+    tick(deltaTime:number){
+
+    }
 }
 
 export class Camera extends Transform3D{
@@ -107,8 +111,6 @@ export class Camera extends Transform3D{
     }
     resetRotation(): void {
         super.resetRotation()
-        this.moveWPosition(new Vector3(0, 2.45*1.6, 4.1*1.6))
-        this.camRotate(new Vector2(-Math.PI,0.5))
     }
 }
 
@@ -158,10 +160,6 @@ export class Object3D extends Transform3D{
 
     getLVert(vert: Vector3): Vector3{
         return MMath.toVector3(MMath.multiply(this.localMatrix, vert.toMatrix4()))
-    }
-
-    tick(deltaTime:number){
-
     }
 }
 

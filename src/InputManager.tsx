@@ -1,6 +1,10 @@
 import { Vector2 } from "./2D"
 import { Vector3 } from "./3D"
 
+export interface EventMouseMove{
+    position: Vector2;
+    delta: Vector2;
+}
 export class InputManager {
     keys: Set<string> = new Set()
     key2eventMap: Map<string, string> = new Map<string, string>()
@@ -38,6 +42,10 @@ export class InputManager {
     static strEOpenFilePicker = 'openFilePicker'
     static strEMoveMouseKeysPressed = 'moveMouseKeysPressed'
 
+    
+    // Define the type for the mouse move event detail
+    eventMouseMove: CustomEvent<EventMouseMove> = new CustomEvent('inputMouseMove', { detail: { position: new Vector2(), delta: new Vector2() } });
+
     constructor(){
         window.addEventListener('keydown', (e) => {
             console.log(e.code)
@@ -67,6 +75,9 @@ export class InputManager {
             this.mouseDiffVector.x += e.movementX
             this.mouseDiffVector.y += e.movementY
             // console.log(this.mouseVector.toString())
+            this.eventMouseMove.detail.position = new Vector2(this.mouseVector.x, this.mouseVector.y)
+            this.eventMouseMove.detail.delta = new Vector2(e.movementX, e.movementY)
+            document.dispatchEvent(this.eventMouseMove)
         })
 
         window.addEventListener('wheel', (e) => {
