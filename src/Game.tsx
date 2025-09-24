@@ -45,7 +45,7 @@ export class Game{
                 this.addObject(new HoveringObject(islandObjs[i].mesh, islandObjs[i].name))
             }
             let cloud = new CloudBillboard(bmpCloud, 1, "cloud")
-            cloud.moveWPosition(new Vector3(0, 1, 0))
+            cloud.moveWPosition(new Vector3(0, 0, 10))
             this.addObject(cloud)
         }
 

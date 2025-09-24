@@ -13,15 +13,17 @@ export type RendererProps = {
 export class Renderer{
     
     camera: Camera = new CameraController()
-    fov: number = 360*2;
+    FOV: number = 360*2;
     scaleMultiplier: number = 1
     renderDimensions: Vector2 = Vector2.zero()
     screenDimensions: Vector2 = Vector2.zero()
     fi: FrameInfo
 
-    nearPlane: number = 0
-    nearShade: number = 3
-    farPlane: number = 10
+    NEAR_PLANE: number = 0
+    NEAR_SHADE: number = 3
+    FAR_PLANE: number = 10
+
+    BILLBOARD_SIZE: number = 50
 
     colors: Color[] = []
 
@@ -29,7 +31,7 @@ export class Renderer{
 
     constructor(){
         this.camera.resetRotation()
-        this.fi = new FrameInfo(this.farPlane, 0)
+        this.fi = new FrameInfo(this.FAR_PLANE, 0)
     }
 
     displayMatrix(ctx: CanvasRenderingContext2D, mat:number[][], offset: Vector2){
@@ -41,7 +43,7 @@ export class Renderer{
     }
     
     draw(props: RendererProps, objects: Object3D[]){
-        this.fi = new FrameInfo(this.farPlane, props.frameCount)
+        this.fi = new FrameInfo(this.FAR_PLANE, props.frameCount)
         this.drawMeshes(props.ctx, objects)
 
         this.displayMatrix(props.ctx, this.camera.localMatrix, new Vector2(40, 20))
@@ -60,12 +62,12 @@ export class Renderer{
 
 
     getScreenSpaceOfVert(vert: Vector3){
-        if(vert.z < this.nearPlane){
+        if(vert.z < this.NEAR_PLANE || vert.z > this.FAR_PLANE){
             return null
         }
 
-        let shortVert = -vert.y/vert.z * this.fov
-        let shortHorz = vert.x/vert.z * this.fov
+        let shortVert = -vert.y/vert.z * this.FOV
+        let shortHorz = vert.x/vert.z * this.FOV
 
         shortHorz *= this.scaleMultiplier
         shortVert *= this.scaleMultiplier
@@ -116,6 +118,7 @@ export class Renderer{
                                 skipped = true
                                 break
                             }
+                            // if(localScreenSpaceVerts[face.vertIndexes[m]].z > )
                             
                             averageDepth += localScreenSpaceVerts[face.vertIndexes[m]].z
 
@@ -126,7 +129,7 @@ export class Renderer{
                             continue
                         }
 
-                        averageDepth /= face.vertIndexes.length * 2
+                        averageDepth /= face.vertIndexes.length
                         avgVertLocation.divide(face.vertIndexes.length)
                         avgWVertLocation.divide(face.vertIndexes.length)
 
@@ -216,11 +219,12 @@ export class Renderer{
         if(!onlyDebug){
             if(face.mesh.obj instanceof Billboard){
                 let billboard: Billboard = face.mesh.obj
-                let offset: Vector2 = new Vector2(screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].x + billboard.sprite.width/2, screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].y + billboard.sprite.height/2)
-                let scale: number = (this.farPlane - fdc.depth) / this.farPlane * billboard.scale
+                let scale: number = (this.FAR_PLANE - fdc.depth) / this.FAR_PLANE * billboard.scale * this.BILLBOARD_SIZE
+                let offset: Vector2 = new Vector2(screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].x - ((billboard.sprite.width* scale)/2), screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].y - ((billboard.sprite.height*scale/2)))
+                
                 
                 ctx.drawImage(billboard.sprite, offset.x, offset.y, billboard.sprite.width * scale, billboard.sprite.height * scale)
-                console.log((this.farPlane - fdc.depth) / this.farPlane)
+                console.log(fdc.depth)
                 return
             }
 
@@ -234,7 +238,7 @@ export class Renderer{
 
             let newColor: Color = new Color(face.color.r, face.color.g, face.color.b, face.color.a)
 
-            let newZ: number = ((this.farPlane)/(this.farPlane - this.nearShade)) + 1/fdc.depth *((-this.farPlane * this.nearShade)/(this.farPlane - this.nearShade))
+            let newZ: number = ((this.FAR_PLANE)/(this.FAR_PLANE - this.NEAR_SHADE)) + 1/fdc.depth *((-this.FAR_PLANE * this.NEAR_SHADE)/(this.FAR_PLANE - this.NEAR_SHADE))
 
             if(overrideColor){
                 newColor = overrideColor

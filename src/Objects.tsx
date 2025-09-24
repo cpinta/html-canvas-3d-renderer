@@ -61,7 +61,7 @@ export class HoveringObject extends MouseInteractableObject{
 
 export class CloudBillboard extends Billboard {
     tick(deltaTime: number){
-        this.moveWPosition(new Vector3(0,0,1).multiply(deltaTime))
+        this.moveWPosition(new Vector3(0,0,-2).multiply(deltaTime))
     }
 }
 
@@ -82,7 +82,8 @@ export class CameraController extends Camera {
     resetRotation() {
         super.resetRotation()
         this.moveWPosition(new Vector3(0, 2.45*1.6, 4.1*1.6))
-        this.camRotate(new Vector2(-Math.PI,0.5))
+        // this.moveWPosition(new Vector3(0, 0, 10))
+        this.camRotate(new Vector2(-Math.PI, 0.5))
     }
 
     mouseMoved(position: Vector2, delta: Vector2){
