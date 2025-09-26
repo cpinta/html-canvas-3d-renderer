@@ -39,7 +39,7 @@ export class Game{
         this.renderer.scaleMultiplier = scaleMultiplier
 
         const islandObjs: Object3D[] = await FileImport3D.ImportIsland();
-        const bmpCloud: ImageBitmap = await FileImport3D.ImportCloudPNG()
+        const bmpCloud: ImageBitmap = await FileImport3D.ImportImage('/cloud.png')
         if(this.objects.length == 0){
             for(let i=0;i<islandObjs.length;i++){
                 this.addObject(new HoveringObject(islandObjs[i].mesh, islandObjs[i].name))

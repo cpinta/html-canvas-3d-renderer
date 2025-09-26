@@ -159,3 +159,35 @@ export class Color {
         ["Land", Color.fromHex("#6F3607")]
     ])
 }
+
+export class AnimatedSprite{
+    frames: ImageBitmap[] = []
+    timeBtFrames: number = 1
+    prevTime: number = 0
+    currentFrameIndex: number = 0
+    nextFrameTime: number = 0
+
+    constructor(frames: ImageBitmap[], timeBtFrames: number){
+        this.frames = frames
+        this.timeBtFrames = timeBtFrames
+        this.nextFrameTime = this.timeBtFrames
+    }
+
+    tick(deltaTime: number){
+        if(this.nextFrameTime < this.prevTime){
+            this.advanceFrame()
+        }
+        this.prevTime += deltaTime
+    }
+
+    getFrame(): ImageBitmap {
+        return this.frames[this.currentFrameIndex]
+    }
+
+    advanceFrame(){
+        this.currentFrameIndex++
+        if(this.currentFrameIndex > this.frames.length-1){
+            this.currentFrameIndex = 0
+        }
+    }
+}

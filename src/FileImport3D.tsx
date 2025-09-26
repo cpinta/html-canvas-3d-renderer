@@ -80,7 +80,7 @@ class FileImport3D{
         return FileImport3D.OBJ_Import(islandContent, Color.hotPink)
     }
 
-    static async PNG_Import(filePath: string){
+    static async Image_Import(filePath: string, sx: number = 0, sy: number = 0, sWidth: number = -1, sHeight: number = -1){
         const response = await fetch(filePath);
         const blob = await response.blob()
         const bitmap = await createImageBitmap(blob)
@@ -88,8 +88,8 @@ class FileImport3D{
         return bitmap
     }
 
-    static async ImportCloudPNG(){
-        return FileImport3D.PNG_Import('/cloud.png')
+    static async ImportImage(path: string){
+        return FileImport3D.Image_Import(path)
     }
 }
 
