@@ -46,7 +46,12 @@ class FileImport3D{
                         vn.push(Number.parseInt(vertInds[2]) - 1)
                     }
                     try{
-                        facesObjs.push(new Face(face, currentColor, new Vector3(vertNormals[vn[0]].x, vertNormals[vn[0]].y, vertNormals[vn[0]].z)))
+                        if(vertNormals.length > vn[0]){
+                            facesObjs.push(new Face(face, currentColor, new Vector3(vertNormals[vn[0]].x, vertNormals[vn[0]].y, vertNormals[vn[0]].z)))
+                        }
+                        else{
+                            facesObjs.push(new Face(face, currentColor))
+                        }
                     }
                     catch(ex: any){
                         console.log("bruh")
