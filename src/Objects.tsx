@@ -1,7 +1,7 @@
 import { Vector2 } from "./2D"
 import { Billboard, Camera, Object3D, Vector3 } from "./3D"
 import { Game } from "./Game"
-import { EventMouseMove } from "./InputManager"
+import type { EventMouseMove } from "./InputManager"
 
 export class MouseInteractableObject extends Object3D{
     
