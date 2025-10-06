@@ -73,8 +73,9 @@ export class Game{
 
         this.renderer.mousePosition = mouseVec;
 
-        this.renderer.clear(ctx)
+        // this.renderer.clear(ctx)
         this.renderer.draw({ctx:ctx, deltaTime: 0, frameCount: this.frameCount}, this.objects)
+        this.frameCount += 1;
         if(this.prevFrameInfo().mouseHoverPosTriIndex != -1){
             this.renderer.drawPolygon(ctx, this.prevFrameInfo().worldScreenSpaceVerts, this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex], false, false, false, Color.white)
             let curObj: Object3D = this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex].face.mesh.obj!
@@ -107,10 +108,10 @@ export class Game{
         }
         this.renderer.camera.tick(deltaTime)
         
-        ctx.fillText(this.fps.toString(), 20, 100)
-        ctx.fillText(mouseVec.x.toString()+", "+mouseVec.y.toString(), 20, 200)
-        ctx.fillText(window.innerWidth.toString()+", "+window.innerHeight.toString(), 20, 220)
-        ctx.fillText((Math.trunc((mouseVec.x/window.innerWidth-0.5)*100)/100).toString()+", "+(Math.trunc((mouseVec.y/window.innerHeight-0.5)*100)/100).toString(), 20, 240)
+        // ctx.fillText(this.fps.toString(), 20, 100)
+        // ctx.fillText(mouseVec.x.toString()+", "+mouseVec.y.toString(), 20, 200)
+        // ctx.fillText(window.innerWidth.toString()+", "+window.innerHeight.toString(), 20, 220)
+        // ctx.fillText((Math.trunc((mouseVec.x/window.innerWidth-0.5)*100)/100).toString()+", "+(Math.trunc((mouseVec.y/window.innerHeight-0.5)*100)/100).toString(), 20, 240)
         
         if(this.frameCount % this.UPDATE_FPS_EVERY == 0){
             this.fps = Math.trunc(1/deltaTime)

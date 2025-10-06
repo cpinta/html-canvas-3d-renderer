@@ -46,13 +46,13 @@ export class Renderer{
         this.fi = new FrameInfo(this.FAR_PLANE, props.frameCount)
         this.drawMeshes(props.ctx, objects)
 
-        this.displayMatrix(props.ctx, this.camera.localMatrix, new Vector2(40, 20))
-        this.displayMatrix(props.ctx, this.camera.worldMatrix, new Vector2(200, 20))
-        this.displayMatrix(props.ctx, this.camera.combinedMatrix, new Vector2(360, 20))
-        this.displayMatrix(props.ctx, this.camera.getFwdVector().toMatrix3(), new Vector2(580, 20))
-        if(objects.length > 0){
-            this.displayMatrix(props.ctx, objects[0].localMatrix, new Vector2(200, 100))
-        }
+        // this.displayMatrix(props.ctx, this.camera.localMatrix, new Vector2(40, 20))
+        // this.displayMatrix(props.ctx, this.camera.worldMatrix, new Vector2(200, 20))
+        // this.displayMatrix(props.ctx, this.camera.combinedMatrix, new Vector2(360, 20))
+        // this.displayMatrix(props.ctx, this.camera.getFwdVector().toMatrix3(), new Vector2(580, 20))
+        // if(objects.length > 0){
+        //     this.displayMatrix(props.ctx, objects[0].localMatrix, new Vector2(200, 100))
+        // }
     }
 
     setObjs(objs: Object3D[]){
@@ -164,36 +164,36 @@ export class Renderer{
             }
         )
 
+        let imgdata: ImageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height)
         for(let i=0;i<this.fi.screenSpaceFaces.length;i++){
-            this.drawPolygon(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
+            // this.drawPolygon(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
+            this.drawTri(ctx, imgdata, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
             facesDrawn++
             
-            if(this.fi.screenSpaceFaces[i].face.vertIndexes.length == 3){
-                if(Vector2.pointInTriangle(this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[0] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[1] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[2] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
-                    if(this.fi.mouseHoverPosTriDepth > this.fi.screenSpaceFaces[i].depth){
-                        this.fi.mouseHoverPosTriIndex = i
-                        this.fi.mouseHoverPosTriDepth = this.fi.screenSpaceFaces[i].depth
-                    }
-                }
-            }
+            // if(this.fi.screenSpaceFaces[i].face.vertIndexes.length == 3){
+            //     if(Vector2.pointInTriangle(this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[0] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[1] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[2] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
+            //         if(this.fi.mouseHoverPosTriDepth > this.fi.screenSpaceFaces[i].depth){
+            //             this.fi.mouseHoverPosTriIndex = i
+            //             this.fi.mouseHoverPosTriDepth = this.fi.screenSpaceFaces[i].depth
+            //         }
+            //     }
+            // }
         }
+        
+        if(this.fi.frameCount % 10 == 0){
+            this.setImgDataXYtoRGBA(imgdata, this.pos, this.pos, Color.black)
+            this.pos++
+        }
+        this.setImgDataXYtoRGBA(imgdata, this.pos, this.pos, Color.lightBlue)
+        ctx.putImageData(imgdata,0,0)
         
         for(let i=0;i<this.fi.screenSpaceFaces.length;i++){
             // this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], false, true, true)
             // facesDrawn++
         }
-
-
-        ctx.fillStyle = '#00FF00'
-        ctx.fillText(linesDrawn.toString(), 20, 20)
-        ctx.fillStyle = '#FF0000'
-        ctx.fillText(facesDrawn.toString(), 20, 60)
-        ctx.fillStyle = '#FFFF00'
-        ctx.fillText(this.screenSpaceMousePosition().toString(), 20, 120)
-        ctx.fillText(this.mousePosition.toString(), 20, 140)
-        ctx.fillText(this.renderDimensions.toString(), 20, 160)
-        ctx.fillStyle = '#00FF00'
     }
+
+    pos = 0;
 
     objVertsToCamera(obj: Object3D){
         let verts = obj.getWVerts()
@@ -212,6 +212,80 @@ export class Renderer{
         vert = MMath.toVector3(MMath.multiply(inv(this.camera.worldMatrix), vert.toMatrix4()))
         vert = MMath.toVector3(MMath.multiply(this.camera.localMatrix, vert.toMatrix4()))
         return vert
+    }
+
+    drawTri(ctx:CanvasRenderingContext2D, imgdata: ImageData, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
+        let ssvs: Vector3[] = []
+        if(fdc.face.vertIndexes.length != 3){
+            return;
+        }
+        for(let i=0;i<fdc.face.vertIndexes.length;i++){
+            let curInd: number = fdc.face.vertIndexes[i] + fdc.vertStartIndex
+            ssvs.push(new Vector3(Math.round(screenSpaceVerts[curInd].x), Math.round(screenSpaceVerts[curInd].y), screenSpaceVerts[curInd].z))
+        }
+
+        ssvs.sort(
+            function(a, b){
+                return a.y - b.y
+            }
+        )
+
+        let curLowYInd: number = 1
+        let curY: number = ssvs[0].y
+        let leftNright: number[] = this.triGetRightAndLeftX(ssvs, Math.round(curY))
+        if(leftNright[0] == Infinity || leftNright[1] == Infinity){
+            leftNright = this.triGetRightAndLeftX(ssvs, Math.round(curY))
+        }
+        while(curY < ssvs[2].y){
+
+            for(let x = Math.max(0,Math.round(leftNright[0])); x <= Math.min(Math.round(leftNright[1]), imgdata.width); x++){
+                this.setImgDataXYtoRGBA(imgdata, x, curY, Color.hotPink)
+                ctx.putImageData(imgdata,0,0)
+                // imgdata.data[(curY * imgdata.width)+x] = fdc.face.color
+            }
+            curY++;
+            leftNright = this.triGetRightAndLeftX(ssvs, Math.round(curY))
+            if(leftNright[0] == Infinity || leftNright[1] == Infinity){
+                leftNright = this.triGetRightAndLeftX(ssvs, Math.round(curY))
+            }
+            if(ssvs[curLowYInd].y < curY){
+                curLowYInd++
+                if(ssvs.length <= curLowYInd){
+                    break;
+                }
+            }
+        }
+    }
+    
+    setImgDataToRGBA(imgdata:ImageData, pos:number, color: Color){
+        imgdata.data[pos*4] = color.r
+        imgdata.data[pos*4+1] = color.g
+        imgdata.data[pos*4+2] = color.b
+        imgdata.data[pos*4+3] = color.a*255
+    }
+
+    setImgDataXYtoRGBA(imgdata:ImageData, x:number, y:number, color: Color){
+        imgdata.data[(y * imgdata.width+x)*4] = color.r
+        imgdata.data[(y * imgdata.width+x)*4+1] = color.g
+        imgdata.data[(y * imgdata.width+x)*4+2] = color.b
+        imgdata.data[(y * imgdata.width+x)*4+3] = color.a*255
+    }
+
+    triGetRightAndLeftX(points: Vector3[], y:number){
+        let x1 = Math.round(this.getXatYonLine(points[0], points[1], y))
+        let x2 = Math.round(this.getXatYonLine(points[0], points[2], y))
+        if(x2 > x1){
+            return [x1, x2]
+        }
+        return [x2, x1]
+    }
+
+    getXatYonLine(p1:Vector3, p2:Vector3, y:number){
+        let slope: number = (p2.y-p1.y)/(p2.x-p1.x)
+        if(slope == 0){
+            return p1.x
+        }
+        return (y-p1.y)/slope + p1.x
     }
 
     drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
@@ -269,7 +343,7 @@ export class Renderer{
                 avgV3 = avgV3.add(screenSpaceVerts[curInd])
             }
             avgV3 = avgV3.divide(face.vertIndexes.length)
-            ctx.fillText(fdc.debugText, avgV3.x, avgV3.y)
+            // ctx.fillText(fdc.debugText, avgV3.x, avgV3.y)
         }
     }
 
@@ -295,6 +369,7 @@ export class FrameInfo{
 
     constructor(farPlane: number, frameCount: number){
         this.mouseHoverPosTriDepth = farPlane
+        this.frameCount = frameCount
     }
 }
 
