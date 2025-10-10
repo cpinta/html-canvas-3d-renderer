@@ -78,7 +78,7 @@ export class Game{
         this.renderer.draw({ctx:ctx, deltaTime: 0, frameCount: this.frameCount}, this.objects)
         this.frameCount += 1;
         if(this.prevFrameInfo().mouseHoverPosTriIndex != -1){
-            this.renderer.drawPolygon(ctx, this.prevFrameInfo().worldScreenSpaceVerts, this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex], false, false, false, Color.white)
+            this.renderer.drawPolygonPen(ctx, this.prevFrameInfo().worldScreenSpaceVerts, this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex], false, false, false, Color.white)
             let curObj: Object3D = this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex].face.mesh.obj!
             if(curObj instanceof MouseInteractableObject){
                 if(this.prevObj != curObj){

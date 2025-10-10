@@ -159,19 +159,12 @@ export class Renderer{
         for(let j=0;j<objects.length;j++){
             let obj: Object3D = objects[j]
             let mesh: Mesh = obj.mesh
-
         }
-
-        // this.fi.screenSpaceFaces.sort(
-        //     function(a, b){
-        //         return b.depth - a.depth
-        //     }
-        // )
 
         let imgdata: ImageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height)
         for(let i=0;i<this.fi.screenSpaceFaces.length;i++){
-            // this.drawPolygon(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
-            this.drawTri2(ctx, imgdata, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
+            // this.drawPolygonPen(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
+            this.drawTri(ctx, imgdata, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
             facesDrawn++
         }
         
@@ -180,7 +173,7 @@ export class Renderer{
         }
         
         for(let i=0;i<this.fi.screenSpaceFaces.length;i++){
-            // this.drawPolygon(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
+            // this.drawPolygonPen(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
             // facesDrawn++
         }
     }
@@ -207,49 +200,6 @@ export class Renderer{
     }
 
     drawTri(ctx:CanvasRenderingContext2D, imgdata: ImageData, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
-        let ssvs: Vector3[] = []
-        if(fdc.face.vertIndexes.length != 3){
-            return;
-        }
-        for(let i=0;i<fdc.face.vertIndexes.length;i++){
-            let curInd: number = fdc.face.vertIndexes[i] + fdc.vertStartIndex
-            ssvs.push(new Vector3(Math.round(screenSpaceVerts[curInd].x), Math.round(screenSpaceVerts[curInd].y), screenSpaceVerts[curInd].z))
-        }
-
-        ssvs.sort(
-            function(a, b){
-                return a.y - b.y
-            }
-        )
-
-        let curLowYInd: number = 1
-        let curY: number = ssvs[0].y
-        let leftNright: number[] = this.triGetRightAndLeftX(ssvs, Math.round(curY))
-        if(leftNright[0] == Infinity || leftNright[1] == Infinity){
-            leftNright = this.triGetRightAndLeftX(ssvs, Math.round(curY))
-        }
-        while(curY < ssvs[2].y){
-
-            for(let x = Math.max(0,Math.round(leftNright[0])); x <= Math.min(Math.round(leftNright[1]), imgdata.width); x++){
-                this.setImgDataXYtoRGBA(imgdata, x, curY, Color.hotPink)
-                ctx.putImageData(imgdata,0,0)
-                // imgdata.data[(curY * imgdata.width)+x] = fdc.face.color
-            }
-            curY++;
-            leftNright = this.triGetRightAndLeftX(ssvs, Math.round(curY))
-            if(leftNright[0] == Infinity || leftNright[1] == Infinity){
-                leftNright = this.triGetRightAndLeftX(ssvs, Math.round(curY))
-            }
-            if(ssvs[curLowYInd].y < curY){
-                curLowYInd++
-                if(ssvs.length <= curLowYInd){
-                    break;
-                }
-            }
-        }
-    }
-
-    drawTri2(ctx:CanvasRenderingContext2D, imgdata: ImageData, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
         
         if(fdc.face.vertIndexes.length != 3){
             return;
@@ -330,7 +280,6 @@ export class Renderer{
         }
     }
     
-    
     setImgDataToRGBA(imgdata:ImageData, pos:number, color: Color){
         imgdata.data[pos*4] = color.r
         imgdata.data[pos*4+1] = color.g
@@ -362,7 +311,7 @@ export class Renderer{
         return (y-p1.y)/slope + p1.x
     }
 
-    drawPolygon(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
+    drawPolygonPen(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
         let face: Face = fdc.face
         if(!onlyDebug){
             if(face.mesh.obj instanceof Billboard){
