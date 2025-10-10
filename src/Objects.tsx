@@ -1,7 +1,8 @@
-import { Vector2 } from "./2D"
+import { Color, Vector2 } from "./2D"
 import { Billboard, Camera, Object3D, Vector3 } from "./3D"
 import { Game } from "./Game"
 import type { EventMouseMove } from "./InputManager"
+import { Cube } from "./Primitives"
 
 export class MouseInteractableObject extends Object3D{
     
@@ -61,7 +62,7 @@ export class HoveringObject extends MouseInteractableObject{
 
 export class CloudBillboard extends Billboard {
     tick(deltaTime: number){
-        this.moveWPosition(new Vector3(0,0,-2).multiply(deltaTime))
+        // this.moveWPosition(new Vector3(0,0,-2).multiply(deltaTime))
     }
 }
 
@@ -81,7 +82,7 @@ export class CameraController extends Camera {
 
     resetRotation() {
         super.resetRotation()
-        this.moveWPosition(new Vector3(0, 2.45*1.6, 4.1*1.6))
+        this.moveWPosition(new Vector3(0, 2.45*1.6*2, 4.1*1.6*2))
         // this.moveWPosition(new Vector3(0, 0, 10))
         this.camRotate(new Vector2(-Math.PI, 0.5))
     }
@@ -89,5 +90,16 @@ export class CameraController extends Camera {
     mouseMoved(position: Vector2, delta: Vector2){
         this.resetRotation()
         this.camRotate(new Vector2((position.x/window.innerWidth-0.5)*this.CAM_ROTATION_SPEED.x, (position.y/window.innerHeight-0.5)*this.CAM_ROTATION_SPEED.y))
+    }
+}
+
+export class RotatingCube extends Cube{
+
+    constructor(color: Color){
+        super(new Vector3(0.5,0.5,-0.5),0.75, color)
+    }
+
+    tick(deltaTime:number){
+        this.RotateW(new Vector3(0, 5*deltaTime, 0))
     }
 }

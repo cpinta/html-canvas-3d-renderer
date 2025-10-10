@@ -19,9 +19,11 @@ export class Renderer{
     screenDimensions: Vector2 = Vector2.zero()
     fi: FrameInfo
 
+    depthBuffer:number[] = []
+
     NEAR_PLANE: number = 0
     NEAR_SHADE: number = 3
-    FAR_PLANE: number = 10
+    FAR_PLANE: number = 100
 
     BILLBOARD_SIZE: number = 50
 
@@ -43,6 +45,7 @@ export class Renderer{
     }
     
     draw(props: RendererProps, objects: Object3D[]){
+        this.depthBuffer = new Array(props.ctx.canvas.width * props.ctx.canvas.height)
         this.fi = new FrameInfo(this.FAR_PLANE, props.frameCount)
         this.drawMeshes(props.ctx, objects)
 
@@ -81,6 +84,7 @@ export class Renderer{
     drawMeshes(ctx: CanvasRenderingContext2D, objects: Object3D[]){
         let linesDrawn = 0
         let facesDrawn = 0
+
         
         for(let j=0;j<objects.length;j++){
             let obj: Object3D = objects[j]
@@ -158,37 +162,25 @@ export class Renderer{
 
         }
 
-        this.fi.screenSpaceFaces.sort(
-            function(a, b){
-                return b.depth - a.depth
-            }
-        )
+        // this.fi.screenSpaceFaces.sort(
+        //     function(a, b){
+        //         return b.depth - a.depth
+        //     }
+        // )
 
         let imgdata: ImageData = ctx.getImageData(0,0,ctx.canvas.width, ctx.canvas.height)
         for(let i=0;i<this.fi.screenSpaceFaces.length;i++){
             // this.drawPolygon(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
-            this.drawTri(ctx, imgdata, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
+            this.drawTri2(ctx, imgdata, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
             facesDrawn++
-            
-            // if(this.fi.screenSpaceFaces[i].face.vertIndexes.length == 3){
-            //     if(Vector2.pointInTriangle(this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[0] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[1] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[2] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
-            //         if(this.fi.mouseHoverPosTriDepth > this.fi.screenSpaceFaces[i].depth){
-            //             this.fi.mouseHoverPosTriIndex = i
-            //             this.fi.mouseHoverPosTriDepth = this.fi.screenSpaceFaces[i].depth
-            //         }
-            //     }
-            // }
         }
         
-        if(this.fi.frameCount % 10 == 0){
-            this.setImgDataXYtoRGBA(imgdata, this.pos, this.pos, Color.black)
-            this.pos++
-        }
-        this.setImgDataXYtoRGBA(imgdata, this.pos, this.pos, Color.lightBlue)
         ctx.putImageData(imgdata,0,0)
+        if(this.fi.mouseHoverPosTriIndex != -1){
+        }
         
         for(let i=0;i<this.fi.screenSpaceFaces.length;i++){
-            // this.drawPolygon(ctx, worldScreenSpaceVerts, screenSpaceFaces[i], false, true, true)
+            // this.drawPolygon(ctx, this.fi.worldScreenSpaceVerts, this.fi.screenSpaceFaces[i], true)
             // facesDrawn++
         }
     }
@@ -256,6 +248,88 @@ export class Renderer{
             }
         }
     }
+
+    drawTri2(ctx:CanvasRenderingContext2D, imgdata: ImageData, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
+        
+        if(fdc.face.vertIndexes.length != 3){
+            return;
+        }
+        
+        var width = ctx.canvas.width;
+		var height = ctx.canvas.height;
+
+        let ssvs: Vector3[] = []
+	
+		var pts = [];
+		for (var i=0; i<3; i++) {
+            let curInd: number = fdc.face.vertIndexes[i] + fdc.vertStartIndex
+            ssvs.push(new Vector3(Math.round(screenSpaceVerts[curInd].x), Math.round(screenSpaceVerts[curInd].y), screenSpaceVerts[curInd].z))
+
+			var p = ssvs[i];
+			pts.push(p);
+		}
+	
+	
+		var bboxmin = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
+		var bboxmax = new Vector2(-Number.MAX_VALUE, -Number.MAX_VALUE);
+		var clamp   = new Vector2(width-1, height-1);
+	
+		for (var i=0; i<3; i++) {
+	
+			bboxmin.x = Math.max(0.0,     Math.min(bboxmin.x, pts[i].x));
+			bboxmax.x = Math.min(clamp.x, Math.max(bboxmax.x, pts[i].x));
+		
+			bboxmin.y = Math.max(0.0,     Math.min(bboxmin.y, pts[i].y));
+			bboxmax.y = Math.min(clamp.y, Math.max(bboxmax.y, pts[i].y));
+		}
+	
+		var P = new Vector3();
+		var xLength = Math.ceil(bboxmax.x);
+		var yLength = Math.ceil(bboxmax.y);
+		var xFloor = Math.floor(bboxmin.x);
+		var yFloor = Math.floor(bboxmin.y);
+		for (P.x = xFloor; P.x <= xLength; P.x++) {
+			for (P.y = yFloor; P.y <= yLength; P.y++) {
+			
+				let bc_screen: Vector3  = Vector3.barycentric(pts[0], pts[1], pts[2], P);
+				
+				if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+			
+				P.z = 0;
+				P.z += pts[0].z * bc_screen.x;
+				P.z += pts[1].z * bc_screen.y;
+				P.z += pts[2].z * bc_screen.z;
+
+                let depthind: number = this.getDepthIndex(Math.floor(P.x), Math.floor(P.y))
+
+                if(this.depthBuffer[depthind] > P.z || this.depthBuffer[depthind] == null){
+                    this.depthBuffer[depthind] = P.z
+
+                    let newColor: Color = new Color(fdc.face.color.r, fdc.face.color.g, fdc.face.color.b, fdc.face.color.a)
+                    if(isShaded){
+                        newColor.r = fdc.face.color.r - ((fdc.dot/6) * 500)
+                        newColor.g = fdc.face.color.g - ((fdc.dot/6) * 500)
+                        newColor.b = fdc.face.color.b - ((fdc.dot/6) * 500)
+                        // newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
+                        // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
+                        // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
+                    }
+
+                    this.setImgDataXYtoRGBA(imgdata, P.x, P.y, newColor)
+                }
+			}
+		}
+
+        if(this.fi.screenSpaceFaces[i].face.vertIndexes.length == 3){
+            if(Vector2.pointInTriangle(this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[0] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[1] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.fi.worldScreenSpaceVerts[this.fi.screenSpaceFaces[i].face.vertIndexes[2] + this.fi.screenSpaceFaces[i].vertStartIndex].toVector2xy(), this.screenSpaceMousePosition())){
+                if(this.fi.mouseHoverPosTriDepth > this.fi.screenSpaceFaces[i].depth){
+                    this.fi.mouseHoverPosTriIndex = i
+                    this.fi.mouseHoverPosTriDepth = this.fi.screenSpaceFaces[i].depth
+                }
+            }
+        }
+    }
+    
     
     setImgDataToRGBA(imgdata:ImageData, pos:number, color: Color){
         imgdata.data[pos*4] = color.r
@@ -298,7 +372,6 @@ export class Renderer{
                 
                 
                 ctx.drawImage(billboard.sprite, offset.x, offset.y, billboard.sprite.width * scale, billboard.sprite.height * scale)
-                console.log(fdc.depth)
                 return
             }
 
@@ -355,6 +428,10 @@ export class Renderer{
 
     screenSpaceMousePosition(){
         return new Vector2( this.mousePosition.x*(this.renderDimensions.x/this.screenDimensions.x) , this.mousePosition.y* (this.renderDimensions.y/this.screenDimensions.y) )
+    }
+
+    getDepthIndex(x:number, y:number){
+        return x + y * this.renderDimensions.x
     }
 }
 

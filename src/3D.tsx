@@ -334,6 +334,29 @@ export class Vector3 {
         newVector.z -= vector.z
         return newVector
     }
+
+    static cross(A:Vector3, B:Vector3){
+        return new Vector3(A.y*B.z - A.z*B.y, A.z*B.x - A.x*B.z, A.x*B.y - A.y*B.x);
+    }
+    
+    static barycentric(A:Vector3, B:Vector3, C:Vector3, P:Vector3) {
+        
+        var s0 = new Vector3();
+        var s1 = new Vector3();
+
+        s1.x = C.y-A.y;
+        s1.y = B.y-A.y;
+        s1.z = A.y-P.y;
+        
+        s0.x = C.x-A.x;
+        s0.y = B.x-A.x;
+        s0.z = A.x-P.x;
+
+        var u = Vector3.cross(s0, s1);
+        let invZ = 1.0 / u.z;
+        return new Vector3(1.0-(u.x+u.y)*invZ, u.y*invZ, u.x*invZ);
+    }
+
     toString(){
         return General.truncate(this.x, 2) + ", "+ General.truncate(this.y, 2) +", "+General.truncate(this.z, 2)
     }
