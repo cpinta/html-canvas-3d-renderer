@@ -22,8 +22,8 @@ export class Renderer{
     depthBuffer:number[] = []
 
     NEAR_PLANE: number = 0
-    NEAR_SHADE: number = 3
-    FAR_PLANE: number = 100
+    NEAR_SHADE: number = 14.5
+    FAR_PLANE: number = 17
 
     BILLBOARD_SIZE: number = 50
 
@@ -255,14 +255,17 @@ export class Renderer{
                 if(this.depthBuffer[depthind] > P.z || this.depthBuffer[depthind] == null){
                     this.depthBuffer[depthind] = P.z
 
+                    let newZ: number = ((this.FAR_PLANE)/(this.FAR_PLANE - this.NEAR_SHADE)) + 1/P.z *((-this.FAR_PLANE * this.NEAR_SHADE)/(this.FAR_PLANE - this.NEAR_SHADE))
+
                     let newColor: Color = new Color(fdc.face.color.r, fdc.face.color.g, fdc.face.color.b, fdc.face.color.a)
                     if(isShaded){
-                        newColor.r = fdc.face.color.r - ((fdc.dot/6) * 500)
-                        newColor.g = fdc.face.color.g - ((fdc.dot/6) * 500)
-                        newColor.b = fdc.face.color.b - ((fdc.dot/6) * 500)
-                        // newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
-                        // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
-                        // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
+                        newColor.r = fdc.face.color.r - ((fdc.dot) * 50)
+                        newColor.g = fdc.face.color.g - ((fdc.dot) * 50)
+                        newColor.b = fdc.face.color.b - ((fdc.dot) * 50)
+
+                        newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
+                        newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
+                        newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
                     }
 
                     this.setImgDataXYtoRGBA(imgdata, P.x, P.y, newColor)
