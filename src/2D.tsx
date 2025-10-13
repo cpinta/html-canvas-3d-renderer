@@ -59,7 +59,7 @@ export class General{
     }
 }
 
-export class Color {
+export class ColorRGBA {
     r: number
     g: number
     b: number
@@ -99,7 +99,7 @@ export class Color {
             hex = hex.slice(1, hex.length)
         }
         if(hex.length != 6 && hex.length != 8){
-            return new Color(-1, -1, -1, -1)
+            return new ColorRGBA(-1, -1, -1, -1)
         }
         let r,g,b,a : number
         a = 1
@@ -117,26 +117,58 @@ export class Color {
                 a =  parseInt(hex.slice(6, 8), 16)/255
             }
 
-            return new Color(r, g, b, a)
+            return new ColorRGBA(r, g, b, a)
         }
         catch{
-            return new Color(-1, -1, -1, -1)
+            return new ColorRGBA(-1, -1, -1, -1)
         }
     }
 
-    static fromColor(color:Color){
-        return new Color(color.r, color.g, color.b, color.a)
+    static fromColorRGBA(color:ColorRGBA){
+        return new ColorRGBA(color.r, color.g, color.b, color.a)
     }
 
-    static darkBlue = Color.fromHex('#0000FF')
-    static lightBlue = Color.fromHex('#00AAEE')
-    static orangeJuiceOrange = Color.fromHex('#EEAA00')
-    static skyLightBlue = Color.fromHex('#AAEEFF')
-    static hotPink = Color.fromHex('#FF00AA')
-    static lightPurple = Color.fromHex('#AAAAFF')
-    static lightGreen = Color.fromHex('#00FFAA')
-    static white = Color.fromHex('#FFFFFF')
-    static black = Color.fromHex('#000000')
+    toColorHSV(){
+        let h = 0
+        let nums = [this.r/255, this.g/255, this.b/255]
+        nums.sort((a,b) => {
+            return a-b
+        })
+        let large = nums[2]
+        let mid = nums[1]
+        let small = nums[0]
+        let diff = large-small
+
+        let ratior = this.r/255
+        let ratiog = this.g/255
+        let ratiob = this.b/255
+        switch(large){
+            case this.r/255:
+                h = (60*((ratiog-ratiob)/diff)+360)%360
+                break
+            case this.g/255:
+                h = (60*((ratiob-ratior)/diff)+120)%360
+                break
+            case this.b/255:
+                h = (60*((ratior-ratiog)/diff)+240)%360
+                break
+        }
+
+        let v=large * 100
+        let s=diff/large * 100
+
+        return new ColorHSV(h,s,v)
+    }
+
+    static darkBlue = ColorRGBA.fromHex('#0000FF')
+    static lightBlue = ColorRGBA.fromHex('#00AAEE')
+    static orangeJuiceOrange = ColorRGBA.fromHex('#EEAA00')
+    static skyLightBlue = ColorRGBA.fromHex('#AAEEFF')
+    static hotPink = ColorRGBA.fromHex('#FF00AA')
+    static lightPurple = ColorRGBA.fromHex('#AAAAFF')
+    static lightGreen = ColorRGBA.fromHex('#00FFAA')
+    static white = ColorRGBA.fromHex('#FFFFFF')
+    static black = ColorRGBA.fromHex('#000000')
     
     static background = this.lightBlue
 
@@ -150,14 +182,32 @@ export class Color {
         this.lightGreen
     ]
 
-    static matColors: Map<string, Color> = new Map([
-        ["Grass", Color.fromHex("#4AB01C")],
-        ["House", Color.fromHex("#8A57B0")],
-        ["Roof", Color.fromHex("#E70070")],
-        ["Tree", Color.fromHex("#6F3607")],
-        ["Door", Color.fromHex("#6F3607")],
-        ["Land", Color.fromHex("#6F3607")]
+    static matColors: Map<string, ColorRGBA> = new Map([
+        ["Grass", ColorRGBA.fromHex("#4AB01C")],
+        ["House", ColorRGBA.fromHex("#8A57B0")],
+        ["Roof", ColorRGBA.fromHex("#E70070")],
+        ["Tree", ColorRGBA.fromHex("#6F3607")],
+        ["Door", ColorRGBA.fromHex("#6F3607")],
+        ["Land", ColorRGBA.fromHex("#6F3607")]
     ])
+}
+
+export class ColorHSV {
+    h: number
+    s: number
+    v: number
+    a: number
+
+    constructor(h:number,s:number,v:number,a:number=1){
+        this.h = h
+        this.s = s
+        this.v = v
+        this.a = a
+    }
+
+    toColorRGBA(){
+
+    }
 }
 
 export class AnimatedSprite{

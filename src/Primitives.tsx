@@ -1,9 +1,9 @@
-import { Color } from "./2D"
+import { ColorRGBA } from "./2D"
 import { Face, Mesh, Object3D, Vector3 } from "./3D"
 
 export class Cube extends Object3D {
 
-    constructor(origin: Vector3, size: number, color: Color){
+    constructor(origin: Vector3, size: number, color: ColorRGBA){
         let verts: Vector3[] = []
         let faces: Face[] = []
 
@@ -18,8 +18,8 @@ export class Cube extends Object3D {
         verts.push(new Vector3(- halfSize, - halfSize, halfSize))
         verts.push(new Vector3(- halfSize, - halfSize, - halfSize))
 
-        faces.push(new Face([0,2,3], Color.hotPink, new Vector3(1,0,0)))
-        faces.push(new Face([0,3,1], Color.hotPink, new Vector3(1,0,0)))
+        faces.push(new Face([0,2,3], ColorRGBA.hotPink, new Vector3(1,0,0)))
+        faces.push(new Face([0,3,1], ColorRGBA.hotPink, new Vector3(1,0,0)))
         faces.push(new Face([0,2,6], color, new Vector3(0,0,1)))
         faces.push(new Face([0,6,4], color, new Vector3(0,0,1)))
         faces.push(new Face([4,6,7], color, new Vector3(-1,0,0)))
@@ -41,7 +41,7 @@ export class Cube extends Object3D {
 
 export class Plane extends Object3D {
 
-    constructor(origin: Vector3, size: number, color: Color){
+    constructor(origin: Vector3, size: number, color: ColorRGBA){
         let verts: Vector3[] = []
         let faces: Face[] = []
 
@@ -64,7 +64,7 @@ export class Plane extends Object3D {
 
 export class Line extends Object3D {
 
-    constructor(start:Vector3, end:Vector3, color: Color){
+    constructor(start:Vector3, end:Vector3, color: ColorRGBA){
         let verts: Vector3[] = []
         let faces: Face[] = []
 

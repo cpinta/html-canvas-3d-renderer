@@ -1,5 +1,5 @@
 import { Object3D, Vector3, Face, Mesh, Camera, Billboard } from "./3D"
-import { Color, General, Vector2 } from "./2D"
+import { ColorRGBA, General, Vector2 } from "./2D"
 import { MMath } from "./Matrix"
 import { inv } from "mathjs"
 import { CameraController } from "./Objects"
@@ -27,7 +27,7 @@ export class Renderer{
 
     BILLBOARD_SIZE: number = 50
 
-    colors: Color[] = []
+    colors: ColorRGBA[] = []
 
     mousePosition: Vector2 = Vector2.zero()
 
@@ -199,7 +199,7 @@ export class Renderer{
         return vert
     }
 
-    drawTri(ctx:CanvasRenderingContext2D, imgdata: ImageData, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
+    drawTri(ctx:CanvasRenderingContext2D, imgdata: ImageData, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: ColorRGBA | null = null){
         
         if(fdc.face.vertIndexes.length != 3){
             return;
@@ -257,15 +257,19 @@ export class Renderer{
 
                     let newZ: number = ((this.FAR_PLANE)/(this.FAR_PLANE - this.NEAR_SHADE)) + 1/P.z *((-this.FAR_PLANE * this.NEAR_SHADE)/(this.FAR_PLANE - this.NEAR_SHADE))
 
-                    let newColor: Color = new Color(fdc.face.color.r, fdc.face.color.g, fdc.face.color.b, fdc.face.color.a)
+                    let newColor: ColorRGBA = new ColorRGBA(fdc.face.color.r, fdc.face.color.g, fdc.face.color.b, fdc.face.color.a)
                     if(isShaded){
-                        newColor.r = fdc.face.color.r - ((fdc.dot) * 50)
-                        newColor.g = fdc.face.color.g - ((fdc.dot) * 50)
-                        newColor.b = fdc.face.color.b - ((fdc.dot) * 50)
+                        let change = 0
+                        // change = -((fdc.dot) * 50)
+                        change = 
+                        
+                        newColor.r = fdc.face.color.r + change
+                        newColor.g = fdc.face.color.g + change
+                        newColor.b = fdc.face.color.b + change
 
-                        newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
-                        newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
-                        newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
+                        // newColor.r = (1-newZ) * newColor.r + newZ * Color.background.r
+                        // newColor.g = (1-newZ) * newColor.g + newZ * Color.background.g
+                        // newColor.b = (1-newZ) * newColor.b + newZ * Color.background.b
                     }
 
                     this.setImgDataXYtoRGBA(imgdata, P.x, P.y, newColor)
@@ -283,14 +287,14 @@ export class Renderer{
         }
     }
     
-    setImgDataToRGBA(imgdata:ImageData, pos:number, color: Color){
+    setImgDataToRGBA(imgdata:ImageData, pos:number, color: ColorRGBA){
         imgdata.data[pos*4] = color.r
         imgdata.data[pos*4+1] = color.g
         imgdata.data[pos*4+2] = color.b
         imgdata.data[pos*4+3] = color.a*255
     }
 
-    setImgDataXYtoRGBA(imgdata:ImageData, x:number, y:number, color: Color){
+    setImgDataXYtoRGBA(imgdata:ImageData, x:number, y:number, color: ColorRGBA){
         imgdata.data[(y * imgdata.width+x)*4] = color.r
         imgdata.data[(y * imgdata.width+x)*4+1] = color.g
         imgdata.data[(y * imgdata.width+x)*4+2] = color.b
@@ -314,7 +318,7 @@ export class Renderer{
         return (y-p1.y)/slope + p1.x
     }
 
-    drawPolygonPen(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: Color | null = null){
+    drawPolygonPen(ctx: CanvasRenderingContext2D, screenSpaceVerts: Vector3[], fdc: FaceDepthStart, isShaded: boolean = true, drawDebug: boolean = false, onlyDebug: boolean = false, overrideColor: ColorRGBA | null = null){
         let face: Face = fdc.face
         if(!onlyDebug){
             if(face.mesh.obj instanceof Billboard){
@@ -335,7 +339,7 @@ export class Renderer{
             }
             ctx.lineTo(screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].x, screenSpaceVerts[face.vertIndexes[0] + fdc.vertStartIndex].y)
 
-            let newColor: Color = new Color(face.color.r, face.color.g, face.color.b, face.color.a)
+            let newColor: ColorRGBA = new ColorRGBA(face.color.r, face.color.g, face.color.b, face.color.a)
 
             let newZ: number = ((this.FAR_PLANE)/(this.FAR_PLANE - this.NEAR_SHADE)) + 1/fdc.depth *((-this.FAR_PLANE * this.NEAR_SHADE)/(this.FAR_PLANE - this.NEAR_SHADE))
 
@@ -361,7 +365,7 @@ export class Renderer{
         }
 
         if(fdc.isDebug && drawDebug){
-            ctx.fillStyle = Color.white.toHex()
+            ctx.fillStyle = ColorRGBA.white.toHex()
             let avgV3: Vector3 = Vector3.zero()
             for(let i=0;i<face.vertIndexes.length;i++){
                 let curInd: number = face.vertIndexes[i] + fdc.vertStartIndex
@@ -374,7 +378,7 @@ export class Renderer{
 
     clear(ctx: CanvasRenderingContext2D){
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        ctx.fillStyle = Color.background.toHex()
+        ctx.fillStyle = ColorRGBA.background.toHex()
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     }
 

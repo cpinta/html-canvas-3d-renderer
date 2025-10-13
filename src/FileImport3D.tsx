@@ -1,15 +1,15 @@
-import { Color } from "./2D"
+import { ColorRGBA } from "./2D"
 import { Face, Mesh, Object3D, Vector3 } from "./3D"
 
 class FileImport3D{
-    static OBJ_Import(fileContent: string, color: Color){
+    static OBJ_Import(fileContent: string, color: ColorRGBA){
         let objName: string = ""
         let objs: Object3D[] = []
         let verts: Vector3[] = []
         let faces: number[][] = []
         let facesObjs: Face[] = []
         let vertNormals: Vector3[] = []
-        let currentColor: Color = Color.hotPink
+        let currentColor: ColorRGBA = ColorRGBA.hotPink
 
         let list: string[] = []
         if(fileContent.includes("\r\n")){
@@ -61,8 +61,8 @@ class FileImport3D{
                     break
                 case "usemtl":
                     let curMatName: string = args[1]
-                    if(Color.matColors.has(curMatName)){
-                        currentColor = Color.fromColor(Color.matColors.get(curMatName)!)
+                    if(ColorRGBA.matColors.has(curMatName)){
+                        currentColor = ColorRGBA.fromColorRGBA(ColorRGBA.matColors.get(curMatName)!)
                     }
                     else{
                         let temp = 0
@@ -82,7 +82,7 @@ class FileImport3D{
     static async ImportIsland(){
         const response = await fetch('/3d renderer island.obj');
         const islandContent = await response.text();
-        return FileImport3D.OBJ_Import(islandContent, Color.hotPink)
+        return FileImport3D.OBJ_Import(islandContent, ColorRGBA.hotPink)
     }
 
     static async Image_Import(filePath: string, sx: number = 0, sy: number = 0, sWidth: number = -1, sHeight: number = -1){

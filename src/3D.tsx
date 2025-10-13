@@ -1,5 +1,5 @@
 
-import { Color, General, Vector2 } from "./2D";
+import { ColorRGBA, General, Vector2 } from "./2D";
 import { identityMatrix4, MMath } from "./Matrix"
 
 
@@ -219,9 +219,9 @@ export class Face {
     vertIndexes: number[]
     largestVertIndex: number = -1
     normal: Vector3
-    color: Color
+    color: ColorRGBA
 
-    constructor(vertIndexes: number[], color: Color = Color.hotPink, normal: Vector3 = Vector3.one()){
+    constructor(vertIndexes: number[], color: ColorRGBA = ColorRGBA.hotPink, normal: Vector3 = Vector3.one()){
         // if(vertIndexes.length < 3){
         //     throw new Error("Invalid face")
         // }

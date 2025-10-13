@@ -1,4 +1,4 @@
-import { Color, Vector2 } from "./2D"
+import { ColorRGBA, Vector2 } from "./2D"
 import { Billboard, Camera, Object3D, Vector3 } from "./3D"
 import { Game } from "./Game"
 import type { EventMouseMove } from "./InputManager"
@@ -95,7 +95,7 @@ export class CameraController extends Camera {
 
 export class RotatingCube extends Cube{
 
-    constructor(color: Color){
+    constructor(color: ColorRGBA){
         super(new Vector3(0.5,0.5,-0.5),0.75, color)
     }
 

@@ -1,4 +1,4 @@
-import { Color, Vector2 } from "./2D"
+import { ColorHSV, ColorRGBA, Vector2 } from "./2D"
 import { Object3D, Vector3 } from "./3D"
 import FileImport3D from "./FileImport3D"
 import { InputManager } from "./InputManager"
@@ -47,10 +47,13 @@ export class Game{
             let cloud = new CloudBillboard(bmpCloud, 1, "cloud")
             cloud.moveWPosition(new Vector3(0, 0, 10))
             this.addObject(cloud)
-            this.addObject(new RotatingCube(Color.darkBlue))
+            this.addObject(new RotatingCube(ColorRGBA.darkBlue))
         }
 
-
+        let color:ColorRGBA = new ColorRGBA(45, 215, 0)
+        let hsv:ColorHSV = color.toColorHSV()
+        let color2:ColorRGBA = new ColorRGBA(31, 52, 29)
+        let hsv2:ColorHSV = color2.toColorHSV()
     }
 
     addObject(obj: Object3D){
@@ -78,7 +81,7 @@ export class Game{
         this.renderer.draw({ctx:ctx, deltaTime: 0, frameCount: this.frameCount}, this.objects)
         this.frameCount += 1;
         if(this.prevFrameInfo().mouseHoverPosTriIndex != -1){
-            this.renderer.drawPolygonPen(ctx, this.prevFrameInfo().worldScreenSpaceVerts, this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex], false, false, false, Color.white)
+            this.renderer.drawPolygonPen(ctx, this.prevFrameInfo().worldScreenSpaceVerts, this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex], false, false, false, ColorRGBA.white)
             let curObj: Object3D = this.prevFrameInfo().screenSpaceFaces[this.prevFrameInfo().mouseHoverPosTriIndex].face.mesh.obj!
             if(curObj instanceof MouseInteractableObject){
                 if(this.prevObj != curObj){
